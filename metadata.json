@@ -1,0 +1,7 @@
+{
+  "name": "Copy of GANI HYPHA - Agent Marketplace",
+  "description": "A world-class agentic microservice ecosystem marketplace powered by the Hypha Engine architecture. Deploy, manage, and orchestrate standalone digital twins and industry-specific workforce pods.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
