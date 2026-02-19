@@ -32,7 +32,6 @@ const Marketplace: React.FC<MarketplaceProps> = ({
   const [isLoadingBlueprints, setIsLoadingBlueprints] = useState(true);
   const [selectedBlueprint, setSelectedBlueprint] = useState<Blueprint | null>(null);
   const [showCopyToast, setShowCopyToast] = useState(false);
-  const [highlightedBpId, setHighlightedBpId] = useState<string | null>(null);
   const [compareList, setCompareList] = useState<string[]>([]);
 
   useEffect(() => {
@@ -62,14 +61,10 @@ const Marketplace: React.FC<MarketplaceProps> = ({
     fetchTrends();
   }, [activeTab]);
 
-  const toggleCompare = (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    setCompareList(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
-  };
-
   const handleQuickDeploy = (trend: Trend) => {
     const content = `${trend.title} ${trend.description}`.toLowerCase();
     
+    // Find the best matching blueprint based on keyword overlap
     const scores = blueprints.map(bp => {
       let score = 0;
       if (content.includes(bp.industry.toLowerCase())) score += 15;
@@ -90,6 +85,11 @@ const Marketplace: React.FC<MarketplaceProps> = ({
     if (matched) {
       onDeploy(matched);
     }
+  };
+
+  const toggleCompare = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    setCompareList(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   };
 
   const handleArchitectFromBlueprint = (e: React.MouseEvent, blueprint: Blueprint) => {
@@ -143,6 +143,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
         </div>
       )}
 
+      {/* Top Banner: Grounding Engine */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -173,7 +174,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
                         <span className={isProvisioning ? 'animate-spin' : 'group-hover/btn:scale-125 transition-transform'}>
                           {isProvisioning ? '🔄' : '⚡'}
                         </span>
-                        {isProvisioning ? 'Provisioning...' : 'Quick Deploy'}
+                        {isProvisioning ? 'Syncing...' : 'Quick Deploy'}
                       </button>
                    </div>
                    <p className="text-[10px] text-slate-400 line-clamp-2 h-6 mb-3">{trend.description}</p>
@@ -187,6 +188,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
         </div>
       </div>
 
+      {/* Filters */}
       <div className="space-y-4">
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
           {categories.map(cat => (
@@ -208,18 +210,18 @@ const Marketplace: React.FC<MarketplaceProps> = ({
             </div>
             {compareList.length > 0 && (
               <div className="ml-auto flex items-center gap-4 animate-in fade-in slide-in-from-right-4">
-                <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">{compareList.length} Selected</span>
-                <button onClick={() => setCompareList([])} className="text-[9px] font-black text-slate-600 hover:text-red-400 uppercase tracking-widest">Clear</button>
+                <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">{compareList.length} In Comparison</span>
+                <button onClick={() => setCompareList([])} className="text-[9px] font-black text-slate-600 hover:text-red-400 uppercase tracking-widest">Reset</button>
               </div>
             )}
           </div>
         </div>
       </div>
 
+      {/* Blueprint Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {isLoadingBlueprints ? Array(6).fill(0).map((_, i) => <div key={i} className="h-[420px] glass rounded-[2.5rem] border border-slate-800 animate-pulse"></div>) : filteredBlueprints.map(blueprint => {
           const isComparing = compareList.includes(blueprint.id);
-          const isHighlighted = highlightedBpId === blueprint.id;
           const isProvisioning = deployingIds.includes(blueprint.id);
           const deployedPod = deployedEcosystems.find(de => de.blueprintId === blueprint.id);
 
@@ -228,11 +230,11 @@ const Marketplace: React.FC<MarketplaceProps> = ({
               key={blueprint.id} 
               onClick={() => setSelectedBlueprint(blueprint)}
               className={`glass rounded-[2.5rem] p-8 flex flex-col group transition-all cursor-pointer relative overflow-hidden border blueprint-card ${
-                isHighlighted ? 'card-highlight' : (blueprint.isFeatured ? 'border-indigo-500/40' : 'border-slate-800/60 hover:border-slate-700')
+                isProvisioning ? 'border-indigo-500/80 animate-pulse' : (blueprint.isFeatured ? 'border-indigo-500/40 shadow-2xl shadow-indigo-600/5' : 'border-slate-800/60 hover:border-slate-700')
               }`}
             >
               <div className="absolute top-0 right-0 p-4 flex gap-2">
-                 <button onClick={(e) => toggleCompare(e, blueprint.id)} className={`w-8 h-8 rounded-xl border transition-all flex items-center justify-center text-[10px] ${isComparing ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-slate-950/60 border-slate-800 text-slate-600 hover:text-white'}`}>⚖️</button>
+                 <button onClick={(e) => toggleCompare(e, blueprint.id)} className={`w-8 h-8 rounded-xl border transition-all flex items-center justify-center text-[10px] ${isComparing ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-slate-950/60 border-slate-800 text-slate-600 hover:text-white'}`} title="Compare Node">⚖️</button>
                  <button onClick={(e) => handleShare(e, blueprint)} className="w-8 h-8 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-center text-[10px] text-slate-600 hover:text-white transition-all">📤</button>
               </div>
 
@@ -241,12 +243,15 @@ const Marketplace: React.FC<MarketplaceProps> = ({
                   {blueprint.icon}
                 </div>
                 <div className="flex flex-col items-end gap-1">
-                  <span className="bg-indigo-500/10 text-indigo-400 px-2 py-0.5 rounded-lg text-[8px] font-black uppercase">{blueprint.tier}</span>
+                  <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase ${blueprint.tier === 'Enterprise' ? 'bg-amber-500/10 text-amber-500' : 'bg-indigo-500/10 text-indigo-400'}`}>{blueprint.tier}</span>
                   <span className="text-[8px] font-mono text-slate-700 uppercase tracking-widest">{blueprint.infrastructure}</span>
                 </div>
               </div>
 
-              <h4 className="text-xl font-bold text-white mb-2 group-hover:text-indigo-400 transition-colors">{blueprint.name}</h4>
+              <h4 className="text-xl font-bold text-white mb-2 group-hover:text-indigo-400 transition-colors flex items-center gap-2">
+                {blueprint.name}
+                {deployedPod && <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>}
+              </h4>
               <p className="text-slate-500 text-[11px] leading-relaxed line-clamp-2 mb-6">{blueprint.description}</p>
               
               <div className="quick-specs grid grid-cols-2 gap-3 mb-6">
@@ -259,29 +264,30 @@ const Marketplace: React.FC<MarketplaceProps> = ({
 
               <div className="mt-auto pt-6 border-t border-slate-900/60 flex items-center justify-between">
                 <div className="flex flex-col">
-                  <span className="text-[8px] font-black text-slate-700 uppercase tracking-widest mb-1">Deployments</span>
-                  <span className="text-xs font-mono font-bold text-white">{blueprint.deploymentCount.toLocaleString()}</span>
+                  <span className="text-[8px] font-black text-slate-700 uppercase tracking-widest mb-1">Total Deployed</span>
+                  <span className="text-xs font-mono font-bold text-white">{blueprint.deploymentCount.toLocaleString()} Units</span>
                 </div>
                 <div className="flex items-center gap-2">
                   {deployedPod ? (
                     <button 
                       onClick={(e) => { e.stopPropagation(); navigate(`/dashboard?podId=${deployedPod.id}`); }}
-                      className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-emerald-600/10 active:scale-95 flex items-center gap-2"
+                      className="px-6 py-3 bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-600 hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl active:scale-95 flex items-center gap-2"
                     >
-                      <span>👁️</span> Command Center
+                      Monitor Node
                     </button>
                   ) : (
                     <>
                       <button 
                         onClick={(e) => handleArchitectFromBlueprint(e, blueprint)}
                         className="p-3 bg-slate-900 hover:bg-slate-800 rounded-2xl border border-slate-800 text-[10px] transition-all"
+                        title="Extend Infrastructure"
                       >🏗️</button>
                       <button 
                         onClick={(e) => { e.stopPropagation(); onDeploy(blueprint); }}
                         disabled={isProvisioning}
-                        className={`px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-indigo-600/10 active:scale-95 ${isProvisioning ? 'opacity-50 grayscale' : ''}`}
+                        className={`px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-indigo-600/10 active:scale-95 ${isProvisioning ? 'opacity-50 grayscale cursor-wait' : ''}`}
                       >
-                        {isProvisioning ? 'Provisioning...' : 'Run Node'}
+                        {isProvisioning ? 'Provisioning...' : 'Instantiate'}
                       </button>
                     </>
                   )}
@@ -292,6 +298,18 @@ const Marketplace: React.FC<MarketplaceProps> = ({
         })}
       </div>
 
+      {/* Comparison Drawer / Summary (Optional enhancement) */}
+      {compareList.length > 1 && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 glass px-8 py-4 rounded-3xl border border-indigo-500/30 shadow-3xl z-40 animate-in slide-in-from-bottom-8 flex items-center gap-8">
+           <div className="flex flex-col">
+              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Node Comparison Layer</span>
+              <span className="text-sm font-bold text-white">{compareList.length} Specifications Selected</span>
+           </div>
+           <button className="px-6 py-2 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-500 transition-all">Generate Diff Report</button>
+        </div>
+      )}
+
+      {/* Selected Blueprint Detail Modal */}
       {selectedBlueprint && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl animate-in fade-in duration-500 overflow-y-auto">
           <div className="glass w-full max-w-2xl rounded-[3rem] my-8 overflow-hidden border border-slate-800/60 shadow-3xl flex flex-col">
@@ -311,7 +329,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
               </div>
             </div>
             
-            <div className="p-12 space-y-10 overflow-y-auto flex-1">
+            <div className="p-12 space-y-10 overflow-y-auto flex-1 custom-scrollbar">
               <div>
                 <h4 className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] mb-4">Functional Matrix</h4>
                 <p className="text-slate-400 leading-relaxed text-sm font-medium">{selectedBlueprint.description}</p>
@@ -327,6 +345,15 @@ const Marketplace: React.FC<MarketplaceProps> = ({
                    ))}
                 </div>
               )}
+
+              <div className="pt-8 border-t border-slate-800/40">
+                <h4 className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em] mb-6">Orchestration Roles</h4>
+                <div className="flex flex-wrap gap-3">
+                  {selectedBlueprint.roles.map(role => (
+                    <span key={role} className="px-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-[10px] font-bold text-slate-400">{role}</span>
+                  ))}
+                </div>
+              </div>
             </div>
             
             <div className="p-12 border-t border-slate-800/60 bg-slate-950/40 flex gap-4">
