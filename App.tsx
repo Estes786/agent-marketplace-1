@@ -28,6 +28,13 @@ const App: React.FC = () => {
 
     setCredits(prev => prev - cost);
 
+    // Increment deployment count for the blueprint
+    setBlueprints(prev => prev.map(b => 
+      b.id === blueprint.id 
+        ? { ...b, deploymentCount: b.deploymentCount + 1 } 
+        : b
+    ));
+
     const newEcosystem: DeployedEcosystem = {
       id: Math.random().toString(36).substr(2, 9).toUpperCase(),
       blueprintId: blueprint.id,
@@ -79,7 +86,7 @@ const App: React.FC = () => {
         <Sidebar deployedCount={deployedEcosystems.length} />
         
         <div className="flex-1 flex flex-col h-screen relative">
-          <Header credits={credits} />
+          <Header credits={credits} activePodsCount={deployedEcosystems.length} />
           
           <main className="flex-1 overflow-y-auto p-4 md:p-8 scrollbar-hide">
             <Routes>

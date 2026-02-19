@@ -32,6 +32,7 @@ export interface Blueprint {
   infrastructure: 'Edge Worker' | 'Cloud Pod' | 'Hybrid Nexus';
   reviews: Review[];
   isFeatured?: boolean;
+  deploymentCount: number;
 }
 
 export interface DeployedEcosystem {

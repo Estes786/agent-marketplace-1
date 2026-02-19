@@ -20,6 +20,7 @@ export const BLUEPRINTS: Blueprint[] = [
     tier: 'Free',
     infrastructure: 'Edge Worker',
     isFeatured: true,
+    deploymentCount: 1242,
     reviews: [
       { id: 'r1', userName: 'DevAgent_01', rating: 5, comment: 'Flawless orchestration of RLS policies.', date: '2025-05-20' },
       { id: 'r2', userName: 'PropManager', rating: 4, comment: 'Great automation, would love more custom role hooks.', date: '2025-05-18' }
@@ -41,6 +42,7 @@ export const BLUEPRINTS: Blueprint[] = [
     price: '$0/mo',
     tier: 'Free',
     infrastructure: 'Edge Worker',
+    deploymentCount: 843,
     reviews: [
       { id: 'r3', userName: 'StyleGenie', rating: 5, comment: 'The YKK Zipper strategy really works invisibly.', date: '2025-05-21' }
     ]
@@ -61,6 +63,7 @@ export const BLUEPRINTS: Blueprint[] = [
     price: '$19/mo',
     tier: 'Pro',
     infrastructure: 'Cloud Pod',
+    deploymentCount: 312,
     reviews: [
       { id: 'r4', userName: 'FamilyFirst', rating: 5, comment: 'GANI handles reminders like a human sibling.', date: '2025-05-15' }
     ]
@@ -82,6 +85,7 @@ export const BLUEPRINTS: Blueprint[] = [
     tier: 'Enterprise',
     infrastructure: 'Hybrid Nexus',
     isFeatured: true,
+    deploymentCount: 156,
     reviews: [
       { id: 'r5', userName: 'CreatorFlow', rating: 3, comment: 'A bit pricey but the trend analysis is top notch.', date: '2025-05-22' }
     ]

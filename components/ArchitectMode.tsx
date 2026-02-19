@@ -54,18 +54,26 @@ const ArchitectMode: React.FC<ArchitectModeProps> = ({ onSaveBlueprint }) => {
   const handleSave = () => {
     if (!blueprintName.trim()) return;
 
+    // Construct features based on selected roles and AI output summary
+    const dynamicFeatures = [
+      ...selectedRoles.map(r => `${r.replace(/^The\s+/, '')} Intelligence Node`),
+      'Custom AI Architecture',
+      'Mycelium Integrated'
+    ];
+
     const newBlueprint: Blueprint = {
       id: `custom-${Date.now()}`,
       name: blueprintName,
       industry: blueprintIndustry,
       description: result.substring(0, 300) + '...',
-      features: ['Custom AI Architecture', 'A2A Optimized', 'Master Engine Integrated'],
+      features: dynamicFeatures.slice(0, 5), // Keep top 5 features
       icon: blueprintIcon,
       roles: selectedRoles.length > 0 ? selectedRoles : [AgentRole.ORCHESTRATOR],
       price: blueprintTier === 'Free' ? '$0/mo' : blueprintTier === 'Pro' ? '$19/mo' : '$99/mo',
       tier: blueprintTier,
       infrastructure: blueprintInfra,
-      reviews: []
+      reviews: [],
+      deploymentCount: 0
     };
 
     onSaveBlueprint(newBlueprint);
@@ -79,6 +87,8 @@ const ArchitectMode: React.FC<ArchitectModeProps> = ({ onSaveBlueprint }) => {
       prev.includes(role) ? prev.filter(r => r !== role) : [...prev, role]
     );
   };
+
+  const clearRoles = () => setSelectedRoles([]);
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -161,7 +171,7 @@ const ArchitectMode: React.FC<ArchitectModeProps> = ({ onSaveBlueprint }) => {
             <div className="glass rounded-3xl p-8 space-y-6 border border-emerald-500/30 animate-in slide-in-from-left-4 duration-500">
               <div className="flex justify-between items-center">
                 <h4 className="text-xl font-bold text-white">Blueprint Designer</h4>
-                <button onClick={() => setShowSaveForm(false)} className="text-slate-500 hover:text-white">✕</button>
+                <button onClick={() => setShowSaveForm(false)} className="text-slate-500 hover:text-white transition-colors">✕</button>
               </div>
               
               <div className="grid grid-cols-2 gap-4">
@@ -200,23 +210,41 @@ const ArchitectMode: React.FC<ArchitectModeProps> = ({ onSaveBlueprint }) => {
                 </select>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Orchestration Roles</label>
-                <div className="flex flex-wrap gap-2">
-                  {Object.values(AgentRole).map(role => (
-                    <button
-                      key={role}
-                      onClick={() => toggleRole(role)}
-                      className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all border ${
-                        selectedRoles.includes(role) 
-                        ? 'bg-indigo-600 border-indigo-400 text-white' 
-                        : 'bg-slate-900 border-slate-800 text-slate-500 hover:border-slate-700'
-                      }`}
-                    >
-                      {role.split(' ')[1]}
-                    </button>
-                  ))}
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <label className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Orchestration Roles</label>
+                  <button 
+                    onClick={clearRoles}
+                    className="text-[9px] text-slate-500 hover:text-red-400 font-bold uppercase tracking-tighter"
+                  >
+                    Clear All
+                  </button>
                 </div>
+                <div className="flex flex-wrap gap-2">
+                  {Object.values(AgentRole).map(role => {
+                    const label = role.replace(/^The\s+/, '');
+                    const isSelected = selectedRoles.includes(role);
+                    return (
+                      <button
+                        key={role}
+                        onClick={() => toggleRole(role)}
+                        className={`px-3 py-2 rounded-xl text-[10px] font-bold uppercase transition-all border flex items-center gap-2 ${
+                          isSelected 
+                          ? 'bg-indigo-600 border-indigo-400 text-white shadow-lg shadow-indigo-600/20' 
+                          : 'bg-slate-900 border-slate-800 text-slate-500 hover:border-slate-700'
+                        }`}
+                      >
+                        {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>}
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+                {selectedRoles.length > 0 && (
+                  <p className="text-[10px] text-indigo-400 font-mono italic">
+                    {selectedRoles.length} roles assigned to pod mycelium
+                  </p>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -248,7 +276,8 @@ const ArchitectMode: React.FC<ArchitectModeProps> = ({ onSaveBlueprint }) => {
 
               <button 
                 onClick={handleSave}
-                className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-bold text-lg transition-all shadow-lg shadow-emerald-600/20"
+                disabled={!blueprintName || selectedRoles.length === 0}
+                className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-bold text-lg transition-all shadow-lg shadow-emerald-600/20 disabled:opacity-50"
               >
                 Sync to Marketplace
               </button>

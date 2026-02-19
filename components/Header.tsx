@@ -1,13 +1,15 @@
 
 import React from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface HeaderProps {
   credits?: number;
+  activePodsCount?: number;
 }
 
-const Header: React.FC<HeaderProps> = ({ credits = 0 }) => {
+const Header: React.FC<HeaderProps> = ({ credits = 0, activePodsCount = 0 }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   
   const getTitle = () => {
     switch(location.pathname) {
@@ -29,12 +31,28 @@ const Header: React.FC<HeaderProps> = ({ credits = 0 }) => {
 
   return (
     <header className="h-20 glass border-b border-slate-800 px-8 flex items-center justify-between sticky top-0 z-10">
-      <div>
-        <h2 className="text-xl font-bold text-white flex items-center gap-2">
-          {getTitle()}
-          <span className="h-1 w-1 bg-slate-600 rounded-full"></span>
-        </h2>
-        <p className="text-sm text-slate-400">{getBreadcrumb()}</p>
+      <div className="flex items-center gap-6">
+        <div>
+          <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            {getTitle()}
+            <span className="h-1 w-1 bg-slate-600 rounded-full"></span>
+          </h2>
+          <p className="text-sm text-slate-400">{getBreadcrumb()}</p>
+        </div>
+
+        {activePodsCount > 0 && location.pathname !== '/dashboard' && (
+          <button 
+            onClick={() => navigate('/dashboard')}
+            className="hidden md:flex items-center gap-3 px-4 py-2 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/30 rounded-xl text-xs font-bold text-indigo-300 transition-all hover:scale-105 active:scale-95 group shadow-lg shadow-indigo-600/10"
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+            </span>
+            GO TO DASHBOARD
+            <span className="bg-indigo-500 text-white px-1.5 py-0.5 rounded-md text-[9px] font-mono">{activePodsCount}</span>
+          </button>
+        )}
       </div>
 
       <div className="flex items-center gap-6">
@@ -59,7 +77,7 @@ const Header: React.FC<HeaderProps> = ({ credits = 0 }) => {
             <div className="w-6 h-6 bg-slate-800 rounded-full overflow-hidden border border-slate-600">
               <img src="https://picsum.photos/32/32?seed=chief" alt="User" />
             </div>
-            <span className="text-xs font-semibold text-indigo-300">STARK_ADMIN</span>
+            <span className="text-xs font-semibold text-indigo-300 uppercase tracking-tighter">STARK_ADMIN</span>
           </div>
         </div>
       </div>
