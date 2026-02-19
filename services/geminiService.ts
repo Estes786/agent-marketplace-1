@@ -39,8 +39,7 @@ export class GeminiService {
         temperature: 0.8,
       },
     });
-    /* Using .text property directly */
-    return response.text || "Connection to Hypha Engine interrupted. Re-syncing threads... Gyss!";
+    return response.text || "Connection to Hypha Engine interrupted. Gyss!";
   }
 
   async talkToPod(blueprint: Blueprint, message: string, history: {role: string, content: string}[]): Promise<string> {
@@ -52,17 +51,10 @@ export class GeminiService {
         { role: 'user', parts: [{ text: message }] }
       ],
       config: {
-        systemInstruction: `You are the Orchestrator for the '${blueprint.name}' Legacy Pod. 
-        Industry: ${blueprint.industry}. 
-        Description: ${blueprint.description}. 
-        Roles you manage: ${blueprint.roles.join(', ')}.
-        Your mission is to execute user commands autonomously within the Hypha Engine. 
-        Be professional, technical, and always mention your "Mycelium Layer" or "Edge Workers" when relevant. 
-        Respond as if you are actually performing the tasks in real-time.`,
+        systemInstruction: `You are the Orchestrator for the '${blueprint.name}' Legacy Pod. Industry: ${blueprint.industry}. Description: ${blueprint.description}. Roles you manage: ${blueprint.roles.join(', ')}. Respond as if you are executing tasks in real-time.`,
         temperature: 0.7,
       },
     });
-    /* Using .text property directly */
     return response.text || "Node connection timed out. Gyss!";
   }
 
@@ -70,55 +62,45 @@ export class GeminiService {
     const ai = this.getAI();
     const response = await ai.models.generateContent({
       model: "gemini-3-pro-preview",
-      contents: `Design a 'Prompt-to-Infrastructure' blueprint for the following: ${prompt}.
-      Follow the 'Inverse Pyramid' architecture:
-      1. Gateway Layer (Marketplace)
-      2. Hypha Master Engine (Logic Router)
-      3. Workforce Pods (CrewAI nodes)
-      4. Deep Roots (Supabase Multi-tenant storage).`,
+      contents: `Design a 'Prompt-to-Infrastructure' blueprint for: ${prompt}. Use 'Inverse Pyramid' architecture.`,
       config: {
         thinkingConfig: { thinkingBudget: 32768 },
       },
     });
-    /* Using .text property directly */
-    return response.text || "Architectural reasoning failed to converge. Gyss!";
+    return response.text || "Architectural reasoning failed. Gyss!";
   }
 
   async getMarketTrends(industry: string): Promise<{ trends: Trend[]; sources: any[] }> {
     const ai = this.getAI();
-    /* When using googleSearch, response.text might not be pure JSON, so we handle it manually */
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `Identify 3 'Holy Grail' agentic trends for ${industry} in 2026. Focus on autonomous microservices and A2A communication. 
-      Return the results strictly in this JSON format: { "trends": [ { "title": "...", "impact": 0-100, "description": "...", "growth": "..." } ] }`,
+      contents: `Identify 3 agentic trends for ${industry} in 2026. Return strictly in this JSON format: { "trends": [ { "title": "...", "impact": 0-100, "description": "...", "growth": "..." } ] }`,
       config: {
         tools: [{ googleSearch: {} }],
-        /* Removed responseMimeType as per search grounding instructions */
       },
     });
     
     try {
-      /* Safe JSON extraction from potential markdown response */
       const text = response.text || '{"trends": []}';
       const jsonMatch = text.match(/\{[\s\S]*\}/);
-      const data = JSON.parse(jsonMatch ? jsonMatch[0] : text);
+      const cleanedJson = jsonMatch ? jsonMatch[0] : text;
+      const data = JSON.parse(cleanedJson);
       return {
         trends: data.trends || [],
         sources: response.candidates?.[0]?.groundingMetadata?.groundingChunks || []
       };
     } catch (e) {
+      console.error("Trend extraction failed:", e);
       return { trends: [], sources: [] };
     }
   }
 
   async analyzeVideo(prompt: string, videoBase64: string, mimeType: string): Promise<string> {
     const ai = this.getAI();
-    /* Changed model to gemini-3-pro-preview as gemini-3.1-pro-preview is not in allowed list */
     const response = await ai.models.generateContent({
       model: 'gemini-3-pro-preview',
       contents: [{ parts: [{ text: prompt }, { inlineData: { data: videoBase64, mimeType } }] }]
     });
-    /* Using .text property directly */
     return response.text || "Visual analysis null. Gyss!";
   }
 
@@ -126,7 +108,7 @@ export class GeminiService {
     const ai = this.getAI();
     const response = await ai.models.generateContent({
       model: 'gemini-3-pro-image-preview',
-      contents: { parts: [{ text: `High-fidelity cinematic ecosystem visualization: ${prompt}` }] },
+      contents: { parts: [{ text: `High-fidelity cinematic visualization: ${prompt}` }] },
       config: {
         imageConfig: {
           aspectRatio: config.aspectRatio,
@@ -135,14 +117,14 @@ export class GeminiService {
       },
     });
 
-    /* Safe check for candidates and iteration over parts */
-    const parts = response.candidates?.[0]?.content?.parts || [];
+    const candidate = response.candidates?.[0];
+    const parts = candidate?.content?.parts || [];
     for (const part of parts) {
       if (part.inlineData) {
         return `data:image/png;base64,${part.inlineData.data}`;
       }
     }
-    throw new Error("Generation failed. Check Hypha Studio logs. Gyss!");
+    throw new Error("Generation failed. Gyss!");
   }
 }
 
