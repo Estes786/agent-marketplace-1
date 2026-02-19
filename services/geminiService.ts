@@ -97,6 +97,7 @@ export class GeminiService {
 
   async analyzeVideo(prompt: string, videoBase64: string, mimeType: string): Promise<string> {
     const ai = this.getAI();
+    // Using gemini-3-pro-preview as gemini-3.1-pro-preview is not in the allowed list
     const response = await ai.models.generateContent({
       model: 'gemini-3-pro-preview',
       contents: [{ parts: [{ text: prompt }, { inlineData: { data: videoBase64, mimeType } }] }]

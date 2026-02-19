@@ -49,7 +49,6 @@ const MediaLab: React.FC = () => {
     // Check for API Key selection (Required for Gemini 3 Pro Image)
     if (window.aistudio && !(await window.aistudio.hasSelectedApiKey())) {
       await window.aistudio.openSelectKey();
-      // Proceed after triggering
     }
 
     setIsGenerating(true);
@@ -73,13 +72,13 @@ const MediaLab: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Video Understanding (Gemini 3.1 Pro) */}
+        {/* Video Understanding */}
         <div className="glass rounded-3xl p-8 flex flex-col border border-indigo-500/10 hover:border-indigo-500/20 transition-all">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 bg-violet-600/20 rounded-xl flex items-center justify-center text-xl">🎬</div>
             <div>
               <h3 className="font-bold text-white">Video Intelligence</h3>
-              <p className="text-[10px] text-slate-500 uppercase font-mono tracking-widest">Model: gemini-3.1-pro-preview</p>
+              <p className="text-[10px] text-slate-500 uppercase font-mono tracking-widest">Model: gemini-3-pro-preview</p>
             </div>
           </div>
 
@@ -120,14 +119,14 @@ const MediaLab: React.FC = () => {
             </button>
 
             {videoResult && (
-              <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 max-h-40 overflow-y-auto shadow-inner">
+              <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 max-h-40 overflow-y-auto shadow-inner mt-4">
                 <p className="text-xs text-slate-300 leading-relaxed font-mono whitespace-pre-wrap">{videoResult}</p>
               </div>
             )}
           </div>
         </div>
 
-        {/* Image Generation (Gemini 3 Pro Image) */}
+        {/* Image Generation (Nano Banana Studio) */}
         <div className="glass rounded-3xl p-8 flex flex-col border border-emerald-500/10 hover:border-emerald-500/20 transition-all">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 bg-emerald-600/20 rounded-xl flex items-center justify-center text-xl">🖼️</div>
@@ -180,11 +179,11 @@ const MediaLab: React.FC = () => {
               disabled={!imagePrompt || isGenerating}
               className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition-all disabled:opacity-50 shadow-lg shadow-emerald-600/20"
             >
-              {isGenerating ? 'Synthesizing 4.0...' : 'Generate 4K Asset'}
+              {isGenerating ? 'Synthesizing 3.0...' : 'Generate High IQ Asset'}
             </button>
 
             {generatedImage && (
-              <div className="rounded-xl overflow-hidden border border-slate-800 shadow-2xl animate-in zoom-in-95 duration-500">
+              <div className="rounded-xl overflow-hidden border border-slate-800 shadow-2xl animate-in zoom-in-95 duration-500 mt-4">
                 <img src={generatedImage} alt="Generated" className="w-full h-auto" />
               </div>
             )}

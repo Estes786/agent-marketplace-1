@@ -21,6 +21,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({ blueprints, credits, onDeploy
   const [trends, setTrends] = useState<Trend[]>([]);
   const [isLoadingTrends, setIsLoadingTrends] = useState(false);
   const [selectedBlueprint, setSelectedBlueprint] = useState<Blueprint | null>(null);
+  const [showCopyToast, setShowCopyToast] = useState(false);
 
   // Deep-linking: check for blueprint ID in URL on mount
   useEffect(() => {
@@ -76,6 +77,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({ blueprints, credits, onDeploy
 
   const handleShare = async (e: React.MouseEvent, blueprint: Blueprint) => {
     e.stopPropagation();
+    // Generate a unique URL for the blueprint using HashRouter structure
     const shareUrl = `${window.location.origin}${window.location.pathname}#/?bp=${blueprint.id}`;
     
     if (navigator.share) {
@@ -86,15 +88,16 @@ const Marketplace: React.FC<MarketplaceProps> = ({ blueprints, credits, onDeploy
           url: shareUrl,
         });
       } catch (err: any) {
-        // "AbortError" means user canceled, which isn't a functional error we need to log as failure
         if (err.name !== 'AbortError') {
           console.error('Error sharing:', err);
         }
       }
     } else {
+      // Fallback: Copy to clipboard if Share API is not supported
       try {
         await navigator.clipboard.writeText(shareUrl);
-        alert('Blueprint link copied to clipboard!');
+        setShowCopyToast(true);
+        setTimeout(() => setShowCopyToast(false), 3000);
       } catch (err) {
         console.error('Failed to copy link:', err);
       }
@@ -173,6 +176,14 @@ const Marketplace: React.FC<MarketplaceProps> = ({ blueprints, credits, onDeploy
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* Link Copied Notification */}
+      {showCopyToast && (
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] bg-emerald-600 text-white px-6 py-3 rounded-full font-bold text-xs uppercase tracking-widest shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300 flex items-center gap-3 border border-emerald-400/20 backdrop-blur-md">
+          <span className="text-lg">🔗</span>
+          Blueprint Link Synchronized to Clipboard
+        </div>
+      )}
+
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -239,7 +250,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({ blueprints, credits, onDeploy
       <div className="space-y-4">
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
           {categories.map(cat => (
-            <button key={cat} onClick={() => setActiveTab(cat)} className={`px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === cat ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-900 text-slate-400 border border-slate-800 hover:border-slate-700'}`}>{cat}</button>
+            <button key={cat} onClick={() => setActiveTab(cat)} className={`px-5 py-2 rounded-xl text-xs font-bold uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === cat ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'bg-slate-900 text-slate-400 border border-slate-800 hover:border-slate-700'}`}>{cat}</button>
           ))}
         </div>
 
@@ -257,13 +268,13 @@ const Marketplace: React.FC<MarketplaceProps> = ({ blueprints, credits, onDeploy
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest ml-1">Tier</span>
+              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest ml-1">Subscription Tier</span>
               <div className="flex bg-slate-950 p-1 rounded-lg border border-slate-800">
                 {tiers.map(t => (
                   <button 
                     key={t} 
                     onClick={() => setActiveTier(t)}
-                    className={`px-3 py-1 rounded-md text-[9px] font-bold uppercase transition-all ${activeTier === t ? 'bg-indigo-500/20 text-indigo-400' : 'text-slate-500 hover:text-slate-300'}`}
+                    className={`px-3 py-1 rounded-md text-[9px] font-bold uppercase tracking-tighter transition-all ${activeTier === t ? 'bg-indigo-500/20 text-indigo-400' : 'text-slate-500 hover:text-slate-300'}`}
                   >
                     {t}
                   </button>
@@ -272,13 +283,13 @@ const Marketplace: React.FC<MarketplaceProps> = ({ blueprints, credits, onDeploy
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest ml-1">Node</span>
+              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest ml-1">Infrastructure Node</span>
               <div className="flex bg-slate-950 p-1 rounded-lg border border-slate-800">
                 {infras.map(infra => (
                   <button 
                     key={infra} 
                     onClick={() => setActiveInfra(infra)}
-                    className={`px-3 py-1 rounded-md text-[9px] font-bold uppercase transition-all whitespace-nowrap ${activeInfra === infra ? 'bg-emerald-500/20 text-emerald-400' : 'text-slate-500 hover:text-slate-300'}`}
+                    className={`px-3 py-1 rounded-md text-[9px] font-bold uppercase tracking-tighter transition-all whitespace-nowrap ${activeInfra === infra ? 'bg-emerald-500/20 text-emerald-400' : 'text-slate-500 hover:text-slate-300'}`}
                   >
                     {infra}
                   </button>
@@ -303,19 +314,20 @@ const Marketplace: React.FC<MarketplaceProps> = ({ blueprints, credits, onDeploy
                 key={blueprint.id} 
                 onClick={() => { setSelectedBlueprint(blueprint); setIsEditing(false); }} 
                 className={`glass rounded-3xl p-6 flex flex-col group transition-all cursor-pointer relative overflow-hidden border ${
-                  blueprint.isFeatured ? 'border-indigo-500/60 shadow-lg' : 'hover:border-indigo-500/50 border-slate-800'
+                  blueprint.isFeatured ? 'border-indigo-500/60 shadow-[0_0_20px_rgba(99,102,241,0.2)]' : 'hover:border-indigo-500/50 border-slate-800'
                 }`}
               >
-                <div className="absolute top-0 right-0 flex items-start z-10">
+                {/* Floating Share Button on Card */}
+                <div className="absolute top-0 right-0 z-10 p-2 flex gap-1">
                   <button 
                     onClick={(e) => handleShare(e, blueprint)}
-                    className="p-2 text-slate-500 hover:text-white transition-colors bg-slate-900/40 rounded-bl-xl border-b border-l border-white/5"
-                    title="Share Blueprint"
+                    className="w-10 h-10 rounded-xl bg-slate-950/80 backdrop-blur-md border border-white/5 flex items-center justify-center text-slate-400 hover:text-indigo-400 hover:border-indigo-500/30 transition-all shadow-lg active:scale-90"
+                    title="Share Pod Blueprint"
                   >
-                    📤
+                    <span className="text-lg">📤</span>
                   </button>
                   {blueprint.isFeatured && (
-                    <div className="bg-indigo-600 text-[8px] font-black text-white px-3 py-1 rounded-bl-xl uppercase tracking-widest flex items-center gap-1 shadow-lg ml-px">
+                    <div className="bg-indigo-600 text-[8px] font-black text-white px-3 py-1 rounded-xl uppercase tracking-widest flex items-center gap-1 shadow-lg">
                       <span className="w-1 h-1 bg-white rounded-full animate-ping"></span>
                       Featured
                     </div>
@@ -327,8 +339,8 @@ const Marketplace: React.FC<MarketplaceProps> = ({ blueprints, credits, onDeploy
                     {blueprint.icon}
                   </div>
                   <div className="flex flex-col items-end gap-1">
-                    <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold uppercase ${blueprint.tier === 'Enterprise' ? 'text-amber-500' : blueprint.tier === 'Pro' ? 'text-indigo-400' : 'text-slate-500'}`}>{blueprint.tier}</span>
-                    <span className="text-[8px] font-mono text-slate-600 uppercase">{blueprint.infrastructure}</span>
+                    <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-tighter ${blueprint.tier === 'Enterprise' ? 'bg-amber-500/10 text-amber-500' : blueprint.tier === 'Pro' ? 'bg-indigo-500/10 text-indigo-400' : 'bg-slate-800 text-slate-500'}`}>{blueprint.tier}</span>
+                    <span className="text-[8px] font-mono text-slate-600 uppercase tracking-widest">{blueprint.infrastructure}</span>
                   </div>
                 </div>
                 <h4 className="text-xl font-bold text-white mb-2 group-hover:text-indigo-300 transition-colors">
@@ -338,15 +350,15 @@ const Marketplace: React.FC<MarketplaceProps> = ({ blueprints, credits, onDeploy
                 <div className="mt-auto pt-6 border-t border-slate-800 space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col">
-                      <span className="text-[9px] text-slate-500 uppercase font-bold">Sync Cost</span>
+                      <span className="text-[9px] text-slate-500 uppercase font-bold tracking-widest">Sync Cost</span>
                       <span className={`text-lg font-bold ${canAfford ? 'text-white' : 'text-red-400'}`}>{cost} HYPHA</span>
                     </div>
                     <button 
                       onClick={(e) => { e.stopPropagation(); onDeploy(blueprint); }}
                       disabled={!canAfford}
-                      className="px-5 py-2.5 rounded-xl text-xs font-bold bg-white text-slate-950 hover:scale-105 active:scale-95 transition-all disabled:opacity-30"
+                      className="px-5 py-2.5 rounded-xl text-xs font-bold bg-white text-slate-950 hover:scale-105 active:scale-95 transition-all shadow-xl disabled:opacity-30 disabled:grayscale"
                     >
-                      Spawn
+                      Spawn Pod
                     </button>
                   </div>
                 </div>
@@ -355,7 +367,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({ blueprints, credits, onDeploy
           })
         ) : (
           <div className="col-span-full py-20 text-center glass rounded-3xl border border-slate-800/50">
-            <p className="text-slate-400 font-mono text-xs uppercase tracking-widest">No nodes found</p>
+            <p className="text-slate-400 font-mono text-xs uppercase tracking-widest">No matching pods synchronized in the current Mycelium scope</p>
           </div>
         )}
       </div>
@@ -372,15 +384,28 @@ const Marketplace: React.FC<MarketplaceProps> = ({ blueprints, credits, onDeploy
                     {selectedBlueprint.icon}
                   </div>
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className="text-3xl font-bold text-white">{selectedBlueprint.name}</h3>
-                      {selectedBlueprint.isFeatured && (
-                        <span className="bg-indigo-600 text-[8px] font-black text-white px-2 py-0.5 rounded-full uppercase">Featured</span>
-                      )}
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-3xl font-bold text-white">{selectedBlueprint.name}</h3>
+                        {selectedBlueprint.isFeatured && (
+                          <span className="bg-indigo-600 text-[8px] font-black text-white px-2 py-0.5 rounded-full uppercase tracking-widest">Featured</span>
+                        )}
+                      </div>
                     </div>
                     <div className="flex items-center gap-4">
-                      <button onClick={(e) => handleShare(e, selectedBlueprint)} className="text-[10px] font-bold text-slate-400 hover:text-white uppercase tracking-widest">📤 Share</button>
-                      <button onClick={handleEditClick} className="text-[10px] font-bold text-indigo-400 hover:text-white uppercase tracking-widest">✏️ Edit</button>
+                      {/* Integrated Share Button in Modal */}
+                      <button 
+                        onClick={(e) => handleShare(e, selectedBlueprint)} 
+                        className="text-[10px] font-bold text-slate-400 hover:text-indigo-400 uppercase tracking-widest flex items-center gap-2 transition-colors bg-slate-900/50 px-3 py-1.5 rounded-lg border border-slate-800 hover:border-indigo-500/30"
+                      >
+                        <span className="text-sm">📤</span> Share Blueprint
+                      </button>
+                      <button 
+                        onClick={handleEditClick} 
+                        className="text-[10px] font-bold text-indigo-400 hover:text-white uppercase tracking-widest flex items-center gap-2 transition-colors"
+                      >
+                        ✏️ Edit Config
+                      </button>
                     </div>
                     <div className="flex items-center gap-3 mt-4">
                       <span className="text-indigo-400 font-mono text-[10px] uppercase tracking-widest px-2 py-0.5 bg-indigo-500/10 rounded-md">ID: {selectedBlueprint.id}</span>
@@ -394,7 +419,8 @@ const Marketplace: React.FC<MarketplaceProps> = ({ blueprints, credits, onDeploy
                     <input type="text" value={editForm?.icon} onChange={(e) => setEditForm(prev => prev ? { ...prev, icon: e.target.value } : null)} className="w-full h-full bg-transparent text-center focus:outline-none" />
                   </div>
                   <div className="flex-1 space-y-2">
-                    <input type="text" value={editForm?.name} onChange={(e) => setEditForm(prev => prev ? { ...prev, name: e.target.value } : null)} className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white font-bold text-xl outline-none" placeholder="Pod Name" />
+                    <h3 className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Synchronizing Pod Specification</h3>
+                    <input type="text" value={editForm?.name} onChange={(e) => setEditForm(prev => prev ? { ...prev, name: e.target.value } : null)} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-white font-bold text-xl outline-none focus:ring-1 focus:ring-indigo-500" placeholder="Pod Name" />
                   </div>
                 </div>
               )}
@@ -404,15 +430,16 @@ const Marketplace: React.FC<MarketplaceProps> = ({ blueprints, credits, onDeploy
               {!isEditing ? (
                 <>
                   <div>
-                    <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-3">Capabilities</h4>
+                    <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-3">Orchestration Capabilities</h4>
                     <p className="text-slate-300 leading-relaxed text-sm">{selectedBlueprint.description}</p>
                   </div>
                   {selectedBlueprint.features && selectedBlueprint.features.length > 0 && (
                     <div>
-                      <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-4">Modules</h4>
+                      <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-4">Functional Modules</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {selectedBlueprint.features.map(f => (
                           <div key={f} className="flex items-center gap-3 p-3 bg-indigo-500/5 rounded-xl border border-indigo-500/10">
+                            <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]"></div>
                             <span className="text-xs font-medium text-slate-300">{f}</span>
                           </div>
                         ))}
@@ -420,16 +447,35 @@ const Marketplace: React.FC<MarketplaceProps> = ({ blueprints, credits, onDeploy
                     </div>
                   )}
                   <div className="space-y-6">
-                    <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">User Reviews</h4>
+                    <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                      <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Community Feedback</h4>
+                      <div className="flex items-center gap-1">
+                        <span className="text-amber-400">⭐</span>
+                        <span className="text-white font-bold text-sm">{getAverageRating(selectedBlueprint.id)}</span>
+                      </div>
+                    </div>
                     <div className="bg-slate-900/50 p-6 rounded-3xl border border-slate-800 space-y-4">
-                      <div className="flex gap-1">
-                        {[1, 2, 3, 4, 5].map(s => (
-                          <button key={s} onClick={() => setNewRating(s)} className={`text-xl ${newRating >= s ? 'grayscale-0' : 'grayscale'}`}>⭐</button>
-                        ))}
+                      <div className="flex items-center gap-4">
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Rate Sync Performance:</span>
+                        <div className="flex gap-1">
+                          {[1, 2, 3, 4, 5].map(s => (
+                            <button key={s} onClick={() => setNewRating(s)} className={`text-xl transition-transform hover:scale-125 ${newRating >= s ? 'grayscale-0' : 'grayscale'}`}>⭐</button>
+                          ))}
+                        </div>
                       </div>
                       <div className="relative">
-                        <textarea value={newComment} onChange={(e) => setNewComment(e.target.value)} placeholder="Review..." className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-xs text-white outline-none resize-none h-24" />
-                        <button onClick={() => handleSubmitReview(selectedBlueprint.id)} className="absolute bottom-3 right-3 px-4 py-2 bg-indigo-600 text-white rounded-xl text-[10px] font-bold">POST</button>
+                        <textarea 
+                          value={newComment} 
+                          onChange={(e) => setNewComment(e.target.value)} 
+                          placeholder="Broadcast your experience with this legacy pod..." 
+                          className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-xs text-white outline-none focus:ring-2 focus:ring-indigo-500 resize-none h-24 shadow-inner" 
+                        />
+                        <button 
+                          onClick={() => handleSubmitReview(selectedBlueprint.id)} 
+                          className="absolute bottom-3 right-3 px-4 py-2 bg-indigo-600 text-white rounded-xl text-[10px] font-bold hover:bg-indigo-500 shadow-lg active:scale-95 transition-all"
+                        >
+                          SUBMIT_LOG
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -437,16 +483,24 @@ const Marketplace: React.FC<MarketplaceProps> = ({ blueprints, credits, onDeploy
               ) : (
                 <div className="space-y-8">
                   <div className="space-y-2">
-                    <label className="text-[10px] text-slate-500 uppercase font-bold">Industry</label>
-                    <select value={editForm?.industry} onChange={(e) => setEditForm(prev => prev ? { ...prev, industry: e.target.value } : null)} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none">
+                    <label className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Industry Classification</label>
+                    <select 
+                      value={editForm?.industry} 
+                      onChange={(e) => setEditForm(prev => prev ? { ...prev, industry: e.target.value } : null)} 
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:ring-1 focus:ring-indigo-500 shadow-inner"
+                    >
                       {categories.filter(c => c !== 'All' && c !== 'Featured').map(cat => (
                         <option key={cat} value={cat}>{cat}</option>
                       ))}
                     </select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] text-slate-500 uppercase font-bold">Description</label>
-                    <textarea value={editForm?.description} onChange={(e) => setEditForm(prev => prev ? { ...prev, description: e.target.value } : null)} className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none h-32 resize-none" />
+                    <label className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Orchestration Summary</label>
+                    <textarea 
+                      value={editForm?.description} 
+                      onChange={(e) => setEditForm(prev => prev ? { ...prev, description: e.target.value } : null)} 
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white outline-none focus:ring-1 focus:ring-indigo-500 h-32 resize-none shadow-inner" 
+                    />
                   </div>
                 </div>
               )}
@@ -455,13 +509,24 @@ const Marketplace: React.FC<MarketplaceProps> = ({ blueprints, credits, onDeploy
             <div className="p-10 border-t border-slate-800 bg-slate-950/50 flex gap-4 shrink-0">
               {!isEditing ? (
                 <>
-                  <button onClick={() => onDeploy(selectedBlueprint)} disabled={credits < (selectedBlueprint.tier === 'Enterprise' ? 500 : selectedBlueprint.tier === 'Pro' ? 150 : 0)} className="flex-1 py-4 bg-white text-slate-950 rounded-2xl font-bold transition-all disabled:opacity-50">Spawn Pod</button>
-                  <button onClick={() => handleStartArchitecting(selectedBlueprint)} className="px-8 py-4 bg-indigo-600 text-white rounded-2xl font-bold flex items-center gap-2">🏗️ Architect</button>
+                  <button 
+                    onClick={() => onDeploy(selectedBlueprint)} 
+                    disabled={credits < (selectedBlueprint.tier === 'Enterprise' ? 500 : selectedBlueprint.tier === 'Pro' ? 150 : 0)} 
+                    className="flex-1 py-4 bg-white text-slate-950 rounded-2xl font-bold transition-all hover:scale-[1.02] active:scale-[0.98] shadow-2xl disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    🚀 Spawn Legacy Pod
+                  </button>
+                  <button 
+                    onClick={() => handleStartArchitecting(selectedBlueprint)} 
+                    className="px-8 py-4 bg-indigo-600 text-white rounded-2xl font-bold flex items-center gap-2 hover:bg-indigo-500 shadow-2xl shadow-indigo-600/20 active:scale-95 transition-all"
+                  >
+                    🏗️ Architect
+                  </button>
                 </>
               ) : (
                 <>
-                  <button onClick={() => setIsEditing(false)} className="flex-1 py-4 bg-slate-800 text-slate-400 rounded-2xl font-bold">Cancel</button>
-                  <button onClick={handleSaveEdit} className="flex-1 py-4 bg-emerald-600 text-white rounded-2xl font-bold">Save</button>
+                  <button onClick={() => setIsEditing(false)} className="flex-1 py-4 bg-slate-800 text-slate-400 rounded-2xl font-bold hover:bg-slate-700 transition-colors">Cancel</button>
+                  <button onClick={handleSaveEdit} className="flex-1 py-4 bg-emerald-600 text-white rounded-2xl font-bold hover:bg-emerald-500 shadow-2xl shadow-emerald-600/20 transition-all">Save Spec</button>
                 </>
               )}
             </div>
