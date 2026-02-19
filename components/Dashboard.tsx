@@ -14,7 +14,7 @@ const Dashboard: React.FC<DashboardProps> = ({ ecosystems, blueprints }) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [selectedId, setSelectedId] = useState<string | null>(ecosystems[0]?.id || null);
-  const [activeTab, setActiveTab] = useState<'Telemetry' | 'Monitoring' | 'Console'>('Telemetry');
+  const [activeTab, setActiveTab] = useState<'Telemetry' | 'Neural Mesh' | 'Monitoring' | 'Console'>('Telemetry');
   
   // Console state
   const [chatInput, setChatInput] = useState('');
@@ -206,12 +206,12 @@ const Dashboard: React.FC<DashboardProps> = ({ ecosystems, blueprints }) => {
                   <p className="text-indigo-400 font-mono text-[10px] uppercase tracking-[0.4em] font-medium">Hypha Orchestration Protocol v1.2.0-STABLE</p>
                 </div>
                 
-                <div className="flex bg-slate-900/60 p-1.5 rounded-[1.5rem] border border-slate-800/60 shadow-inner">
-                  {['Telemetry', 'Monitoring', 'Console'].map(tab => (
+                <div className="flex bg-slate-900/60 p-1.5 rounded-[1.5rem] border border-slate-800/60 shadow-inner overflow-x-auto scrollbar-hide">
+                  {['Telemetry', 'Neural Mesh', 'Monitoring', 'Console'].map(tab => (
                     <button 
                       key={tab} 
                       onClick={() => setActiveTab(tab as any)} 
-                      className={`px-8 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                      className={`px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
                         activeTab === tab 
                         ? 'bg-slate-800 text-white shadow-2xl border border-slate-700/50' 
                         : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/30'
@@ -259,6 +259,69 @@ const Dashboard: React.FC<DashboardProps> = ({ ecosystems, blueprints }) => {
                     </div>
                   </div>
                 </div>
+              ) : activeTab === 'Neural Mesh' ? (
+                 <div className="flex-1 flex items-center justify-center p-4 animate-in zoom-in-95 duration-500 overflow-hidden relative bg-slate-950/40 rounded-[2.5rem] border border-slate-800/60 shadow-inner">
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20">
+                       <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                         <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#4f46e5" strokeWidth="0.5"/>
+                       </pattern>
+                       <rect width="100%" height="100%" fill="url(#grid)" />
+                    </svg>
+                    
+                    <div className="relative z-10 w-full max-w-2xl h-full flex items-center justify-center">
+                       {/* Center Node: Orchestrator */}
+                       <div className="absolute w-24 h-24 bg-indigo-600 rounded-3xl flex flex-col items-center justify-center border-4 border-indigo-400 shadow-[0_0_50px_rgba(79,70,229,0.5)] z-20">
+                          <span className="text-2xl">🌀</span>
+                          <span className="text-[8px] font-black text-white mt-1 uppercase tracking-widest">MASTER</span>
+                       </div>
+
+                       {/* Sub-Nodes Roles Visualization */}
+                       {selectedBlueprint.roles.map((role, idx) => {
+                          const total = selectedBlueprint.roles.length;
+                          const angle = (idx / total) * 2 * Math.PI;
+                          const x = Math.cos(angle) * 160;
+                          const y = Math.sin(angle) * 160;
+                          
+                          return (
+                            <React.Fragment key={role}>
+                              {/* Connection Line */}
+                              <svg className="absolute inset-0 w-full h-full pointer-events-none overflow-visible">
+                                 <line 
+                                   x1="50%" y1="50%" 
+                                   x2={`calc(50% + ${x}px)`} y2={`calc(50% + ${y}px)`} 
+                                   stroke="rgba(79,70,229,0.4)" 
+                                   strokeWidth="2" 
+                                   strokeDasharray="5,5"
+                                   className="animate-[shimmer_10s_infinite_linear]"
+                                 />
+                              </svg>
+                              {/* Sub Node */}
+                              <div 
+                                style={{ transform: `translate(${x}px, ${y}px)` }}
+                                className="absolute w-16 h-16 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col items-center justify-center shadow-xl hover:border-indigo-500/50 transition-all group"
+                              >
+                                 <div className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,1)]"></div>
+                                 <span className="text-xl opacity-60 group-hover:opacity-100 transition-opacity">🤖</span>
+                                 <span className="text-[7px] font-black text-slate-500 mt-1 uppercase text-center px-1 leading-tight group-hover:text-indigo-400">
+                                   {role.replace(/^The\s+/, '')}
+                                 </span>
+                              </div>
+                            </React.Fragment>
+                          );
+                       })}
+                    </div>
+                    
+                    <div className="absolute bottom-8 left-10 flex flex-col gap-2">
+                       <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                          <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">A2A_LINK_ACTIVE</span>
+                       </div>
+                       <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></div>
+                          <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">MYCELIUM_SYNC_LOCKED</span>
+                       </div>
+                    </div>
+                 </div>
               ) : activeTab === 'Monitoring' ? (
                 <div className="flex-1 flex flex-col gap-8 animate-in zoom-in-95 duration-500 overflow-hidden">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8 flex-1">
@@ -359,7 +422,7 @@ const Dashboard: React.FC<DashboardProps> = ({ ecosystems, blueprints }) => {
                         <div className="bg-slate-900/60 p-5 rounded-3xl rounded-bl-none border border-slate-800/60">
                           <div className="flex gap-1.5 items-center">
                             <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce"></span>
-                            <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                            <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:-0.15s] transition-all"></span>
                             <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
                             <span className="text-[10px] font-black text-indigo-400/60 uppercase tracking-widest ml-2">Node Syncing...</span>
                           </div>

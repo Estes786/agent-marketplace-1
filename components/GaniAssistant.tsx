@@ -131,6 +131,7 @@ const GaniAssistant: React.FC<GaniAssistantProps> = ({ isOpen, setIsOpen }) => {
                 <div className="bg-slate-800 p-3 rounded-2xl rounded-bl-none border border-slate-700">
                   <div className="flex gap-1">
                     <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce"></div>
+                    {/* Fixed missing bracket for opening div tag */}
                     <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
                     <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
                   </div>
@@ -169,7 +170,11 @@ const GaniAssistant: React.FC<GaniAssistantProps> = ({ isOpen, setIsOpen }) => {
           </div>
         </div>
       ) : (
-        <button onClick={() => setIsOpen(true)} className="w-16 h-16 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl shadow-2xl flex items-center justify-center text-3xl transition-all hover:scale-105 active:scale-95 group relative border-2 border-indigo-400/30">
+        <button 
+          onClick={() => setIsOpen(true)} 
+          data-tour="gani-trigger"
+          className="w-16 h-16 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl shadow-2xl flex items-center justify-center text-3xl transition-all hover:scale-105 active:scale-95 group relative border-2 border-indigo-400/30"
+        >
           <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-slate-950"></div>
           🌀
         </button>

@@ -3,6 +3,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Blueprint, Review, AgentRole, DeployedEcosystem } from '../types';
 import { gemini, Trend } from '../services/geminiService';
+import { 
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, 
+  Cell, PieChart, Pie, AreaChart, Area, CartesianGrid, Legend 
+} from 'recharts';
 
 interface MarketplaceProps {
   blueprints: Blueprint[];
@@ -33,6 +37,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
   const [selectedBlueprint, setSelectedBlueprint] = useState<Blueprint | null>(null);
   const [showCopyToast, setShowCopyToast] = useState(false);
   const [compareList, setCompareList] = useState<string[]>([]);
+  const [showAnalytics, setShowAnalytics] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -43,7 +48,6 @@ const Marketplace: React.FC<MarketplaceProps> = ({
 
   const categories = ['All', 'Featured', 'Property', 'Personal Services', 'Lifestyle', 'Content Creation'];
   const tiers = ['All', 'Free', 'Pro', 'Enterprise'];
-  const infras = ['All', 'Edge Worker', 'Cloud Pod', 'Hybrid Nexus'];
 
   const fetchTrends = async () => {
     setIsLoadingTrends(true);
@@ -61,10 +65,43 @@ const Marketplace: React.FC<MarketplaceProps> = ({
     fetchTrends();
   }, [activeTab]);
 
+  // Analytics Data Simulation
+  const popularityData = useMemo(() => {
+    return blueprints.map(bp => ({
+      name: bp.name.split(' ')[0],
+      deployments: bp.deploymentCount,
+      full: bp.name
+    })).sort((a, b) => b.deployments - a.deployments);
+  }, [blueprints]);
+
+  const revenueData = useMemo(() => {
+    const totals = { Free: 0, Pro: 0, Enterprise: 0 };
+    blueprints.forEach(bp => {
+      const price = bp.tier === 'Enterprise' ? 49 : bp.tier === 'Pro' ? 19 : 0;
+      totals[bp.tier] += bp.deploymentCount * price;
+    });
+    return Object.entries(totals).map(([tier, value]) => ({ name: tier, value }));
+  }, [blueprints]);
+
+  const trendHistory = useMemo(() => {
+    return Array.from({ length: 7 }).map((_, i) => ({
+      day: `Day ${i + 1}`,
+      deployments: Math.floor(Math.random() * 50) + 10,
+      syncs: Math.floor(Math.random() * 100) + 50
+    }));
+  }, []);
+
+  const acquisitionData = [
+    { name: 'Organic', value: 45 },
+    { name: 'GANI Sync', value: 30 },
+    { name: 'Affiliate', value: 15 },
+    { name: 'Direct', value: 10 }
+  ];
+
+  const COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#10b981'];
+
   const handleQuickDeploy = (trend: Trend) => {
     const content = `${trend.title} ${trend.description}`.toLowerCase();
-    
-    // Find the best matching blueprint based on keyword overlap
     const scores = blueprints.map(bp => {
       let score = 0;
       if (content.includes(bp.industry.toLowerCase())) score += 15;
@@ -116,12 +153,11 @@ const Marketplace: React.FC<MarketplaceProps> = ({
     return blueprints.filter(blueprint => {
       const matchesTab = activeTab === 'All' || (activeTab === 'Featured' ? blueprint.isFeatured : blueprint.industry === activeTab);
       const matchesTier = activeTier === 'All' || blueprint.tier === activeTier;
-      const matchesInfra = activeInfra === 'All' || blueprint.infrastructure === activeInfra;
       const searchLower = searchQuery.toLowerCase();
       const matchesSearch = blueprint.name.toLowerCase().includes(searchLower) || blueprint.description.toLowerCase().includes(searchLower);
-      return matchesTab && matchesTier && matchesInfra && matchesSearch;
+      return matchesTab && matchesTier && matchesSearch;
     });
-  }, [activeTab, activeTier, activeInfra, searchQuery, blueprints]);
+  }, [activeTab, activeTier, searchQuery, blueprints]);
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
@@ -143,173 +179,291 @@ const Marketplace: React.FC<MarketplaceProps> = ({
         </div>
       )}
 
-      {/* Top Banner: Grounding Engine */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-6 bg-indigo-500 rounded-full shadow-[0_0_10px_rgba(99,102,241,0.5)]"></div>
-            <h3 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
-              Hypha Grounding Engine <span className="text-indigo-500 font-mono">v2.1</span>
-            </h3>
-          </div>
-          <div className="flex items-center gap-4">
-            <button onClick={() => setActiveTab('Featured')} className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${activeTab === 'Featured' ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-slate-900 border-slate-800 text-slate-400'}`}>⭐ Featured</button>
-            <button onClick={fetchTrends} className="text-[10px] font-bold text-slate-500 hover:text-indigo-400 uppercase tracking-widest flex items-center gap-2 transition-all">{isLoadingTrends ? 'Grounding...' : 'Sync Trends'}</button>
-          </div>
+      {/* Header & Mode Toggle */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-2 h-6 bg-indigo-500 rounded-full shadow-[0_0_10px_rgba(99,102,241,0.5)]"></div>
+          <h3 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
+            Hypha Orchestration Hub <span className="text-indigo-500 font-mono">v2.1</span>
+          </h3>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {isLoadingTrends ? Array(3).fill(0).map((_, i) => <div key={i} className="h-32 bg-slate-900/50 border border-slate-800 rounded-2xl animate-pulse"></div>) : trends.map((trend, i) => {
-            const isProvisioning = blueprints.some(bp => bp.name.toLowerCase().includes(trend.title.toLowerCase()) && deployingIds.includes(bp.id));
-            return (
-              <div key={i} className="glass rounded-2xl p-4 border border-indigo-500/10 hover:border-indigo-400/30 transition-all group flex flex-col justify-between">
-                 <div>
-                   <div className="flex justify-between items-start mb-2 gap-2">
-                      <h4 className="text-sm font-bold text-white truncate flex-1">{trend.title}</h4>
-                      <button 
-                        onClick={() => handleQuickDeploy(trend)} 
-                        disabled={isProvisioning}
-                        className={`flex items-center gap-1.5 px-2.5 py-1.5 bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all text-[9px] font-black uppercase tracking-widest border border-indigo-500/20 rounded-lg shrink-0 group/btn ${isProvisioning ? '' : 'pulse-btn'}`}
-                      >
-                        <span className={isProvisioning ? 'animate-spin' : 'group-hover/btn:scale-125 transition-transform'}>
-                          {isProvisioning ? '🔄' : '⚡'}
-                        </span>
-                        {isProvisioning ? 'Syncing...' : 'Quick Deploy'}
-                      </button>
-                   </div>
-                   <p className="text-[10px] text-slate-400 line-clamp-2 h-6 mb-3">{trend.description}</p>
-                 </div>
-                 <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-indigo-500" style={{ width: `${trend.impact}%` }}></div>
-                 </div>
-              </div>
-            );
-          })}
+        <div className="flex bg-slate-900/60 p-1.5 rounded-2xl border border-slate-800/60">
+          <button 
+            onClick={() => setShowAnalytics(false)}
+            className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${!showAnalytics ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+          >
+            Market
+          </button>
+          <button 
+            onClick={() => setShowAnalytics(true)}
+            className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${showAnalytics ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+          >
+            Insights
+          </button>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="space-y-4">
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-          {categories.map(cat => (
-            <button key={cat} onClick={() => setActiveTab(cat)} className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === cat ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'bg-slate-900 text-slate-400 border border-slate-800'}`}>{cat}</button>
-          ))}
-        </div>
-
-        <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-slate-900/40 p-4 rounded-[2rem] border border-slate-800/60">
-          <div className="flex flex-wrap gap-6 items-center flex-1 w-full">
-            <div className="relative w-full md:w-64">
-              <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search legacy pods..." className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-9 pr-4 text-[11px] text-white focus:ring-1 focus:ring-indigo-500 outline-none" />
-              <span className="absolute left-3 top-3 text-slate-600 text-xs">🔍</span>
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Subscription Tier</span>
-              <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800/60">
-                {tiers.map(t => <button key={t} onClick={() => setActiveTier(t)} className={`px-4 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter transition-all ${activeTier === t ? 'bg-indigo-500/20 text-indigo-400' : 'text-slate-600 hover:text-slate-300'}`}>{t}</button>)}
-              </div>
-            </div>
-            {compareList.length > 0 && (
-              <div className="ml-auto flex items-center gap-4 animate-in fade-in slide-in-from-right-4">
-                <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">{compareList.length} In Comparison</span>
-                <button onClick={() => setCompareList([])} className="text-[9px] font-black text-slate-600 hover:text-red-400 uppercase tracking-widest">Reset</button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Blueprint Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {isLoadingBlueprints ? Array(6).fill(0).map((_, i) => <div key={i} className="h-[420px] glass rounded-[2.5rem] border border-slate-800 animate-pulse"></div>) : filteredBlueprints.map(blueprint => {
-          const isComparing = compareList.includes(blueprint.id);
-          const isProvisioning = deployingIds.includes(blueprint.id);
-          const deployedPod = deployedEcosystems.find(de => de.blueprintId === blueprint.id);
-
-          return (
-            <div 
-              key={blueprint.id} 
-              onClick={() => setSelectedBlueprint(blueprint)}
-              className={`glass rounded-[2.5rem] p-8 flex flex-col group transition-all cursor-pointer relative overflow-hidden border blueprint-card ${
-                isProvisioning ? 'border-indigo-500/80 animate-pulse' : (blueprint.isFeatured ? 'border-indigo-500/40 shadow-2xl shadow-indigo-600/5' : 'border-slate-800/60 hover:border-slate-700')
-              }`}
-            >
-              <div className="absolute top-0 right-0 p-4 flex gap-2">
-                 <button onClick={(e) => toggleCompare(e, blueprint.id)} className={`w-8 h-8 rounded-xl border transition-all flex items-center justify-center text-[10px] ${isComparing ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-slate-950/60 border-slate-800 text-slate-600 hover:text-white'}`} title="Compare Node">⚖️</button>
-                 <button onClick={(e) => handleShare(e, blueprint)} className="w-8 h-8 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-center text-[10px] text-slate-600 hover:text-white transition-all">📤</button>
-              </div>
-
-              <div className="flex justify-between items-start mb-6">
-                <div className="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-3xl shadow-inner group-hover:scale-110 transition-transform">
-                  {blueprint.icon}
-                </div>
-                <div className="flex flex-col items-end gap-1">
-                  <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase ${blueprint.tier === 'Enterprise' ? 'bg-amber-500/10 text-amber-500' : 'bg-indigo-500/10 text-indigo-400'}`}>{blueprint.tier}</span>
-                  <span className="text-[8px] font-mono text-slate-700 uppercase tracking-widest">{blueprint.infrastructure}</span>
-                </div>
-              </div>
-
-              <h4 className="text-xl font-bold text-white mb-2 group-hover:text-indigo-400 transition-colors flex items-center gap-2">
-                {blueprint.name}
-                {deployedPod && <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>}
-              </h4>
-              <p className="text-slate-500 text-[11px] leading-relaxed line-clamp-2 mb-6">{blueprint.description}</p>
-              
-              <div className="quick-specs grid grid-cols-2 gap-3 mb-6">
-                {blueprint.roles.slice(0, 2).map(r => (
-                  <div key={r} className="bg-slate-900/60 p-2 rounded-xl border border-slate-800/40 text-[8px] font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
-                    <span className="w-1 h-1 bg-indigo-500 rounded-full"></span> {r.replace(/^The\s+/, '')}
+      {!showAnalytics ? (
+        <>
+          {/* Marketplace Content */}
+          <div className="space-y-4" data-tour="grounding-engine">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {isLoadingTrends ? Array(3).fill(0).map((_, i) => <div key={i} className="h-32 bg-slate-900/50 border border-slate-800 rounded-2xl animate-pulse"></div>) : trends.map((trend, i) => {
+                const isProvisioning = blueprints.some(bp => bp.name.toLowerCase().includes(trend.title.toLowerCase()) && deployingIds.includes(bp.id));
+                return (
+                  <div key={i} className="glass rounded-2xl p-4 border border-indigo-500/10 hover:border-indigo-400/30 transition-all group flex flex-col justify-between">
+                     <div>
+                       <div className="flex justify-between items-start mb-2 gap-2">
+                          <h4 className="text-sm font-bold text-white truncate flex-1">{trend.title}</h4>
+                          <button 
+                            onClick={() => handleQuickDeploy(trend)} 
+                            disabled={isProvisioning}
+                            className={`flex items-center gap-1.5 px-2.5 py-1.5 bg-indigo-600/20 text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all text-[9px] font-black uppercase tracking-widest border border-indigo-500/20 rounded-lg shrink-0 group/btn ${isProvisioning ? '' : 'pulse-btn'}`}
+                          >
+                            <span className={isProvisioning ? 'animate-spin' : 'group-hover/btn:scale-125 transition-transform'}>
+                              {isProvisioning ? '🔄' : '⚡'}
+                            </span>
+                            {isProvisioning ? 'Syncing...' : 'Quick Deploy'}
+                          </button>
+                       </div>
+                       <p className="text-[10px] text-slate-400 line-clamp-2 h-6 mb-3">{trend.description}</p>
+                     </div>
+                     <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
+                        <div className="h-full bg-indigo-500" style={{ width: `${trend.impact}%` }}></div>
+                     </div>
                   </div>
-                ))}
-              </div>
+                );
+              })}
+            </div>
+          </div>
 
-              <div className="mt-auto pt-6 border-t border-slate-900/60 flex items-center justify-between">
-                <div className="flex flex-col">
-                  <span className="text-[8px] font-black text-slate-700 uppercase tracking-widest mb-1">Total Deployed</span>
-                  <span className="text-xs font-mono font-bold text-white">{blueprint.deploymentCount.toLocaleString()} Units</span>
+          <div className="space-y-4">
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              {categories.map(cat => (
+                <button key={cat} onClick={() => setActiveTab(cat)} className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === cat ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'bg-slate-900 text-slate-400 border border-slate-800'}`}>{cat}</button>
+              ))}
+            </div>
+
+            <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-slate-900/40 p-4 rounded-[2rem] border border-slate-800/60">
+              <div className="flex flex-wrap gap-6 items-center flex-1 w-full">
+                <div className="relative w-full md:w-64">
+                  <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search legacy pods..." className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-9 pr-4 text-[11px] text-white focus:ring-1 focus:ring-indigo-500 outline-none" />
+                  <span className="absolute left-3 top-3 text-slate-600 text-xs">🔍</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  {deployedPod ? (
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); navigate(`/dashboard?podId=${deployedPod.id}`); }}
-                      className="px-6 py-3 bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-600 hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl active:scale-95 flex items-center gap-2"
-                    >
-                      Monitor Node
-                    </button>
-                  ) : (
-                    <>
-                      <button 
-                        onClick={(e) => handleArchitectFromBlueprint(e, blueprint)}
-                        className="p-3 bg-slate-900 hover:bg-slate-800 rounded-2xl border border-slate-800 text-[10px] transition-all"
-                        title="Extend Infrastructure"
-                      >🏗️</button>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); onDeploy(blueprint); }}
-                        disabled={isProvisioning}
-                        className={`px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-indigo-600/10 active:scale-95 ${isProvisioning ? 'opacity-50 grayscale cursor-wait' : ''}`}
-                      >
-                        {isProvisioning ? 'Provisioning...' : 'Instantiate'}
-                      </button>
-                    </>
-                  )}
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Subscription Tier</span>
+                  <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800/60">
+                    {tiers.map(t => <button key={t} onClick={() => setActiveTier(t)} className={`px-4 py-1 rounded-lg text-[9px] font-black uppercase tracking-tighter transition-all ${activeTier === t ? 'bg-indigo-500/20 text-indigo-400' : 'text-slate-600 hover:text-slate-300'}`}>{t}</button>)}
+                  </div>
                 </div>
+                {compareList.length > 0 && (
+                  <div className="ml-auto flex items-center gap-4 animate-in fade-in slide-in-from-right-4">
+                    <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">{compareList.length} In Comparison</span>
+                    <button onClick={() => setCompareList([])} className="text-[9px] font-black text-slate-600 hover:text-red-400 uppercase tracking-widest">Reset</button>
+                  </div>
+                )}
               </div>
             </div>
-          );
-        })}
-      </div>
+          </div>
 
-      {/* Comparison Drawer / Summary (Optional enhancement) */}
-      {compareList.length > 1 && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 glass px-8 py-4 rounded-3xl border border-indigo-500/30 shadow-3xl z-40 animate-in slide-in-from-bottom-8 flex items-center gap-8">
-           <div className="flex flex-col">
-              <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Node Comparison Layer</span>
-              <span className="text-sm font-bold text-white">{compareList.length} Specifications Selected</span>
-           </div>
-           <button className="px-6 py-2 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-500 transition-all">Generate Diff Report</button>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" data-tour="marketplace-list">
+            {isLoadingBlueprints ? Array(6).fill(0).map((_, i) => <div key={i} className="h-[420px] glass rounded-[2.5rem] border border-slate-800 animate-pulse"></div>) : filteredBlueprints.map(blueprint => {
+              const isComparing = compareList.includes(blueprint.id);
+              const isProvisioning = deployingIds.includes(blueprint.id);
+              const deployedPod = deployedEcosystems.find(de => de.blueprintId === blueprint.id);
+
+              return (
+                <div 
+                  key={blueprint.id} 
+                  onClick={() => setSelectedBlueprint(blueprint)}
+                  className={`glass rounded-[2.5rem] p-8 flex flex-col group transition-all cursor-pointer relative overflow-hidden border blueprint-card ${
+                    isProvisioning ? 'border-indigo-500/80 animate-pulse' : (blueprint.isFeatured ? 'border-indigo-500/40 shadow-2xl shadow-indigo-600/5' : 'border-slate-800/60 hover:border-slate-700')
+                  }`}
+                >
+                  <div className="absolute top-0 right-0 p-4 flex gap-2">
+                     <button onClick={(e) => toggleCompare(e, blueprint.id)} className={`w-8 h-8 rounded-xl border transition-all flex items-center justify-center text-[10px] ${isComparing ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-slate-950/60 border-slate-800 text-slate-600 hover:text-white'}`} title="Compare Node">⚖️</button>
+                     <button onClick={(e) => handleShare(e, blueprint)} className="w-8 h-8 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-center text-[10px] text-slate-600 hover:text-white transition-all">📤</button>
+                  </div>
+
+                  <div className="flex justify-between items-start mb-6">
+                    <div className="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-3xl shadow-inner group-hover:scale-110 transition-transform">
+                      {blueprint.icon}
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase ${blueprint.tier === 'Enterprise' ? 'bg-amber-500/10 text-amber-500' : 'bg-indigo-500/10 text-indigo-400'}`}>{blueprint.tier}</span>
+                      <span className="text-[8px] font-mono text-slate-700 uppercase tracking-widest">{blueprint.infrastructure}</span>
+                    </div>
+                  </div>
+
+                  <h4 className="text-xl font-bold text-white mb-2 group-hover:text-indigo-400 transition-colors flex items-center gap-2">
+                    {blueprint.name}
+                    {deployedPod && <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>}
+                  </h4>
+                  <p className="text-slate-500 text-[11px] leading-relaxed line-clamp-2 mb-6">{blueprint.description}</p>
+                  
+                  <div className="quick-specs grid grid-cols-2 gap-3 mb-6">
+                    {blueprint.roles.slice(0, 2).map(r => (
+                      <div key={r} className="bg-slate-900/60 p-2 rounded-xl border border-slate-800/40 text-[8px] font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
+                        <span className="w-1 h-1 bg-indigo-500 rounded-full"></span> {r.replace(/^The\s+/, '')}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-auto pt-6 border-t border-slate-900/60 flex items-center justify-between">
+                    <div className="flex flex-col">
+                      <span className="text-[8px] font-black text-slate-700 uppercase tracking-widest mb-1">Total Deployed</span>
+                      <span className="text-xs font-mono font-bold text-white">{blueprint.deploymentCount.toLocaleString()} Units</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {deployedPod ? (
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); navigate(`/dashboard?podId=${deployedPod.id}`); }}
+                          className="px-6 py-3 bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-600 hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl active:scale-95 flex items-center gap-2"
+                        >
+                          Monitor Node
+                        </button>
+                      ) : (
+                        <>
+                          <button 
+                            onClick={(e) => handleArchitectFromBlueprint(e, blueprint)}
+                            className="p-3 bg-slate-900 hover:bg-slate-800 rounded-2xl border border-slate-800 text-[10px] transition-all"
+                            title="Extend Infrastructure"
+                          >🏗️</button>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); onDeploy(blueprint); }}
+                            disabled={isProvisioning}
+                            className={`px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-indigo-600/10 active:scale-95 ${isProvisioning ? 'opacity-50 grayscale cursor-wait' : ''}`}
+                          >
+                            {isProvisioning ? 'Provisioning...' : 'Instantiate'}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      ) : (
+        /* Analytics Dashboard */
+        <div className="space-y-8 animate-in zoom-in-95 duration-500">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            {[
+              { label: 'Total Ecosystems', value: blueprints.reduce((acc, b) => acc + b.deploymentCount, 0), icon: '🧬', color: 'text-indigo-400' },
+              { label: 'Gross Mycelium Revenue', value: `$${revenueData.reduce((acc, r) => acc + r.value, 0).toLocaleString()}`, icon: '💰', color: 'text-emerald-400' },
+              { label: 'Active Sync Rate', value: '94.2%', icon: '🔄', color: 'text-amber-400' },
+              { label: 'Grounding Sources', value: '124', icon: '🌍', color: 'text-pink-400' }
+            ].map((stat, i) => (
+              <div key={i} className="glass p-6 rounded-3xl border border-slate-800/60 shadow-xl">
+                <div className="flex justify-between items-start mb-4">
+                  <span className="text-2xl">{stat.icon}</span>
+                  <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Real-time</span>
+                </div>
+                <p className={`text-2xl font-black ${stat.color} mb-1`}>{stat.value}</p>
+                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Popularity Bar Chart */}
+            <div className="glass p-8 rounded-[2.5rem] border border-slate-800/60 h-[400px] flex flex-col">
+              <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-8">Node Popularity (Units)</h4>
+              <div className="flex-1">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={popularityData} layout="vertical">
+                    <XAxis type="number" hide />
+                    <YAxis dataKey="name" type="category" stroke="#475569" fontSize={10} axisLine={false} tickLine={false} width={80} />
+                    <Tooltip 
+                      cursor={{fill: 'rgba(99, 102, 241, 0.1)'}}
+                      contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '12px', fontSize: '10px' }}
+                    />
+                    <Bar dataKey="deployments" radius={[0, 8, 8, 0]}>
+                      {popularityData.map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Trend History Area Chart */}
+            <div className="glass p-8 rounded-[2.5rem] border border-slate-800/60 h-[400px] flex flex-col">
+              <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-8">7-Day Deployment Velocity</h4>
+              <div className="flex-1">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={trendHistory}>
+                    <defs>
+                      <linearGradient id="colorDeploy" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} opacity={0.3} />
+                    <XAxis dataKey="day" stroke="#475569" fontSize={9} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '12px', fontSize: '10px' }} />
+                    <Area type="monotone" dataKey="deployments" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorDeploy)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Revenue Pie Chart */}
+            <div className="glass p-8 rounded-[2.5rem] border border-slate-800/60 h-[400px] flex flex-col">
+              <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-8">Revenue Yield by Tier</h4>
+              <div className="flex-1">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={revenueData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={100}
+                      paddingAngle={8}
+                      dataKey="value"
+                    >
+                      {revenueData.map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '12px', fontSize: '10px' }} />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.1em' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Acquisition Pie Chart */}
+            <div className="glass p-8 rounded-[2.5rem] border border-slate-800/60 h-[400px] flex flex-col">
+              <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-8">User Acquisition Flow</h4>
+              <div className="flex-1">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={acquisitionData}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={100}
+                      labelLine={false}
+                      dataKey="value"
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {acquisitionData.map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '12px', fontSize: '10px' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Selected Blueprint Detail Modal */}
       {selectedBlueprint && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl animate-in fade-in duration-500 overflow-y-auto">
           <div className="glass w-full max-w-2xl rounded-[3rem] my-8 overflow-hidden border border-slate-800/60 shadow-3xl flex flex-col">

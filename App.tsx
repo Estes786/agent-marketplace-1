@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { BLUEPRINTS } from './constants';
 import { DeployedEcosystem, Blueprint } from './types';
@@ -10,6 +10,8 @@ import ArchitectMode from './components/ArchitectMode';
 import MediaLab from './components/MediaLab';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
+import BottomNav from './components/BottomNav';
+import { startOnboardingTour } from './services/tourService';
 
 const App: React.FC = () => {
   const navigate = useNavigate();
@@ -17,7 +19,19 @@ const App: React.FC = () => {
   const [deployedEcosystems, setDeployedEcosystems] = useState<DeployedEcosystem[]>([]);
   const [credits, setCredits] = useState(2500);
   const [isGaniOpen, setIsGaniOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [deployingIds, setDeployingIds] = useState<string[]>([]);
+
+  // Check for first visit and start tour
+  useEffect(() => {
+    const isComplete = localStorage.getItem('hypha_onboarding_complete');
+    if (!isComplete) {
+      const timer = setTimeout(() => {
+        startOnboardingTour(navigate);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   const handleDeploy = (blueprint: Blueprint) => {
     const cost = blueprint.tier === 'Enterprise' ? 500 : blueprint.tier === 'Pro' ? 150 : 0;
@@ -30,7 +44,6 @@ const App: React.FC = () => {
     setCredits(prev => prev - cost);
     setDeployingIds(prev => [...prev, blueprint.id]);
 
-    // Increment deployment count
     setBlueprints(prev => prev.map(b => 
       b.id === blueprint.id 
         ? { ...b, deploymentCount: b.deploymentCount + 1 } 
@@ -59,7 +72,6 @@ const App: React.FC = () => {
     setDeployedEcosystems(prev => [...prev, newEcosystem]);
     setIsGaniOpen(true);
 
-    // After a brief delay to show "Syncing" state, navigate to dashboard
     setTimeout(() => {
       setDeployingIds(prev => prev.filter(id => id !== blueprint.id));
       setDeployedEcosystems(prev => 
@@ -70,7 +82,6 @@ const App: React.FC = () => {
           metrics: { ...e.metrics, nodeHealth: 100 }
         } : e)
       );
-      // Navigate to Command Center and focus on the new pod
       navigate(`/dashboard?podId=${newEcosystem.id}`);
     }, 2000);
   };
@@ -85,12 +96,21 @@ const App: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-[#020617] text-slate-200 overflow-hidden selection:bg-indigo-500/30">
-      <Sidebar deployedCount={deployedEcosystems.length} />
+      {/* Responsive Sidebar (Permanent on Desktop, Drawer on Mobile) */}
+      <Sidebar 
+        deployedCount={deployedEcosystems.length} 
+        isOpen={isSidebarOpen} 
+        setIsOpen={setIsSidebarOpen} 
+      />
       
       <div className="flex-1 flex flex-col h-screen relative">
-        <Header credits={credits} activePodsCount={deployedEcosystems.length} />
+        <Header 
+          credits={credits} 
+          activePodsCount={deployedEcosystems.length} 
+          toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+        />
         
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 scrollbar-hide">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 scrollbar-hide pb-24 lg:pb-8">
           <Routes>
             <Route path="/" element={
               <Marketplace 
@@ -108,6 +128,9 @@ const App: React.FC = () => {
           </Routes>
         </main>
         
+        {/* Mobile Navigation Bar */}
+        <BottomNav activePodsCount={deployedEcosystems.length} />
+
         <GaniAssistant isOpen={isGaniOpen} setIsOpen={setIsGaniOpen} />
       </div>
     </div>

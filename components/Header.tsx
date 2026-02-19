@@ -5,9 +5,10 @@ import { useLocation, useNavigate } from 'react-router-dom';
 interface HeaderProps {
   credits?: number;
   activePodsCount?: number;
+  toggleSidebar?: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ credits = 0, activePodsCount = 0 }) => {
+const Header: React.FC<HeaderProps> = ({ credits = 0, activePodsCount = 0, toggleSidebar }) => {
   const location = useLocation();
   const navigate = useNavigate();
   
@@ -23,28 +24,36 @@ const Header: React.FC<HeaderProps> = ({ credits = 0, activePodsCount = 0 }) => 
 
   const getBreadcrumb = () => {
     switch(location.pathname) {
-      case '/': return 'Browse and synchronize industry-grade legacy pods';
-      case '/dashboard': return 'Live orchestration of deployed agentic microservices';
-      case '/architect': return 'High-fidelity architecture for custom autonomous systems';
-      case '/media-lab': return 'Multi-modal analysis and cinematic asset synthesis';
+      case '/': return 'Browse industry-grade legacy pods';
+      case '/dashboard': return 'Live orchestration of microservices';
+      case '/architect': return 'High-fidelity system architecture';
+      case '/media-lab': return 'Visual intelligence analysis';
       default: return 'GANI HYPHA Node v1.2.0-STABLE';
     }
   };
 
   return (
-    <header className="h-20 glass border-b border-slate-800/60 px-8 flex items-center justify-between sticky top-0 z-20">
-      <div className="flex items-center gap-8">
-        <div>
+    <header className="h-20 glass border-b border-slate-800/60 px-4 md:px-8 flex items-center justify-between sticky top-0 z-20">
+      <div className="flex items-center gap-4 md:gap-8 overflow-hidden">
+        {/* Mobile Menu Toggle */}
+        <button 
+          onClick={toggleSidebar}
+          className="lg:hidden h-10 w-10 flex items-center justify-center bg-slate-900 border border-slate-800 rounded-xl text-slate-400"
+        >
+          <span className="text-xl">☰</span>
+        </button>
+
+        <div className="truncate">
           <div className="flex items-center gap-2 mb-0.5">
-            <h2 className="text-xl font-bold text-white tracking-tight">
+            <h2 className="text-sm md:text-xl font-bold text-white tracking-tight truncate">
               {getTitle()}
             </h2>
-            <div className="flex items-center gap-1 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
+            <div className="flex items-center gap-1 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20 shrink-0">
               <span className="w-1 h-1 bg-indigo-400 rounded-full animate-pulse"></span>
               <span className="text-[8px] font-mono text-indigo-400 uppercase tracking-widest">Live</span>
             </div>
           </div>
-          <p className="text-xs text-slate-500 font-medium tracking-tight">{getBreadcrumb()}</p>
+          <p className="text-[10px] md:text-xs text-slate-500 font-medium tracking-tight truncate">{getBreadcrumb()}</p>
         </div>
 
         {activePodsCount > 0 && location.pathname !== '/dashboard' && (
@@ -62,7 +71,7 @@ const Header: React.FC<HeaderProps> = ({ credits = 0, activePodsCount = 0 }) => 
         )}
       </div>
 
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-4 md:gap-6">
         <div className="hidden lg:flex items-center gap-8 px-6 py-2.5 bg-slate-950/40 border border-slate-800/60 rounded-2xl">
           <div className="flex flex-col">
             <span className="text-[8px] text-slate-500 uppercase tracking-[0.2em] font-black mb-0.5">Node Reputation</span>
@@ -83,17 +92,17 @@ const Header: React.FC<HeaderProps> = ({ credits = 0, activePodsCount = 0 }) => 
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <button className="h-10 w-10 rounded-2xl border border-slate-800 flex items-center justify-center hover:bg-slate-800/50 transition-all relative group">
+        <div className="flex items-center gap-2 md:gap-4">
+          <button className="h-10 w-10 rounded-2xl border border-slate-800 flex items-center justify-center hover:bg-slate-800/50 transition-all relative group shrink-0">
             <span className="text-lg group-hover:scale-110 transition-transform">🔔</span>
             <span className="absolute top-2 right-2 w-2 h-2 bg-indigo-500 rounded-full border-2 border-slate-900"></span>
           </button>
           
-          <div className="h-10 pl-1.5 pr-4 rounded-2xl border border-slate-800 bg-slate-900/40 flex items-center gap-3 hover:border-indigo-500/30 transition-all cursor-pointer group">
+          <div className="h-10 pl-1.5 pr-2 md:pr-4 rounded-2xl border border-slate-800 bg-slate-900/40 flex items-center gap-3 hover:border-indigo-500/30 transition-all cursor-pointer group shrink-0">
             <div className="w-7 h-7 bg-slate-800 rounded-xl overflow-hidden border border-slate-700 p-0.5">
               <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=ChiefStark" alt="User" className="w-full h-full rounded-lg" />
             </div>
-            <div className="flex flex-col">
+            <div className="hidden sm:flex flex-col">
               <span className="text-[10px] font-black text-white uppercase tracking-tighter leading-none">STARK_ADMIN</span>
               <span className="text-[8px] font-mono text-slate-500 uppercase tracking-widest leading-none mt-1">Level 4</span>
             </div>

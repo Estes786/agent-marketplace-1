@@ -7,6 +7,8 @@
     <title>GANI HYPHA | Agent Marketplace</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Shepherd.js CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@14.0.1/dist/css/shepherd.css"/>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -60,6 +62,62 @@
         .shadow-3xl {
           box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.6);
         }
+
+        /* Custom Shepherd Overrides */
+        .shepherd-element {
+            background: #0f172a !important;
+            border: 1px solid #334155 !important;
+            border-radius: 1.5rem !important;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+            max-width: 400px !important;
+        }
+        .shepherd-header {
+            background: transparent !important;
+            padding: 1.5rem 1.5rem 0.5rem !important;
+        }
+        .shepherd-title {
+            color: #f8fafc !important;
+            font-weight: 800 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.05em !important;
+            font-size: 1rem !important;
+        }
+        .shepherd-text {
+            color: #94a3b8 !important;
+            padding: 0.5rem 1.5rem 1.5rem !important;
+            line-height: 1.6 !important;
+            font-size: 0.875rem !important;
+        }
+        .shepherd-footer {
+            padding: 0 1.5rem 1.5rem !important;
+        }
+        .shepherd-button {
+            background: #4f46e5 !important;
+            color: white !important;
+            border-radius: 0.75rem !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.05em !important;
+            font-size: 0.75rem !important;
+            padding: 0.75rem 1.25rem !important;
+            transition: all 0.2s !important;
+        }
+        .shepherd-button:hover {
+            background: #4338ca !important;
+            transform: translateY(-1px) !important;
+        }
+        .shepherd-button-secondary {
+            background: rgba(51, 65, 85, 0.5) !important;
+            color: #94a3b8 !important;
+        }
+        .shepherd-button-secondary:hover {
+            background: rgba(51, 65, 85, 0.8) !important;
+            color: #f8fafc !important;
+        }
+        .shepherd-arrow:before {
+            background: #0f172a !important;
+            border: 1px solid #334155 !important;
+        }
     </style>
 <script type="importmap">
 {
@@ -70,6 +128,7 @@
     "@google/genai": "https://esm.sh/@google/genai@1.42.0",
     "react-router-dom": "https://esm.sh/react-router-dom@7.1.3?deps=react@19.0.0,react-dom@19.0.0",
     "recharts": "https://esm.sh/recharts@2.15.0?deps=react@19.0.0,react-dom@19.0.0",
+    "shepherd.js": "https://esm.sh/shepherd.js@14.0.1",
     "react/": "https://esm.sh/react@19.0.0/"
   }
 }

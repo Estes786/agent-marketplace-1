@@ -19,6 +19,12 @@ export interface Review {
   date: string;
 }
 
+export interface CognitiveSpecs {
+  reasoningDepth: number; // 0-100
+  memoryPersistence: 'Volatile' | 'Linear' | 'Recursive';
+  thinkingBudget: number; // tokens
+}
+
 export interface Blueprint {
   id: string;
   name: string;
@@ -33,6 +39,8 @@ export interface Blueprint {
   reviews: Review[];
   isFeatured?: boolean;
   deploymentCount: number;
+  cognitiveSpecs?: CognitiveSpecs;
+  didHash?: string;
 }
 
 export interface DeployedEcosystem {
