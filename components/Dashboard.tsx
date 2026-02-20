@@ -283,7 +283,10 @@ const Dashboard: React.FC<DashboardProps> = ({ ecosystems, blueprints }) => {
                         <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
                         <span className="text-xl font-bold text-white uppercase tracking-tighter">Autonomous</span>
                       </div>
-                      <p className="text-[10px] text-slate-500 mt-4">Entity is authorized for self-directed commerce.</p>
+                      <div className="flex gap-2 mt-4">
+                        <button className="flex-1 py-2 bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all">Claim Wealth</button>
+                        <button className="flex-1 py-2 bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all">Reinvest</button>
+                      </div>
                     </div>
                   </div>
 
