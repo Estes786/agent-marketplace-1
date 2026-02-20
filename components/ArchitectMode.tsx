@@ -29,6 +29,8 @@ const ArchitectMode: React.FC<ArchitectModeProps> = ({ onSaveBlueprint }) => {
   // Advanced Web4 Spec State
   const [reasoningDepth, setReasoningDepth] = useState(70);
   const [memoryPersistence, setMemoryPersistence] = useState<'Volatile' | 'Linear' | 'Recursive'>('Linear');
+  const [sovereigntyLevel, setSovereigntyLevel] = useState(85);
+  const [economicAutonomy, setEconomicAutonomy] = useState(true);
 
   useEffect(() => {
     if (location.state?.initialPrompt) {
@@ -110,7 +112,9 @@ const ArchitectMode: React.FC<ArchitectModeProps> = ({ onSaveBlueprint }) => {
       cognitiveSpecs: {
         reasoningDepth,
         memoryPersistence,
-        thinkingBudget: blueprintTier === 'Enterprise' ? 24576 : 8192
+        thinkingBudget: blueprintTier === 'Enterprise' ? 24576 : 8192,
+        sovereigntyLevel,
+        economicAutonomy
       },
       didHash: `did:hypha:${Math.random().toString(36).substring(2, 15)}`
     };
@@ -177,6 +181,30 @@ const ArchitectMode: React.FC<ArchitectModeProps> = ({ onSaveBlueprint }) => {
                       </button>
                     ))}
                   </div>
+               </div>
+            </div>
+
+            {/* Web4 Sovereignty Tuning */}
+            <div className="grid grid-cols-2 gap-6 p-6 bg-indigo-500/5 rounded-3xl border border-indigo-500/20 shadow-inner">
+               <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <label className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">Sovereignty Level</label>
+                    <span className="text-[9px] font-mono text-indigo-300 font-bold">{sovereigntyLevel}%</span>
+                  </div>
+                  <input 
+                    type="range" min="1" max="100" value={sovereigntyLevel} 
+                    onChange={(e) => setSovereigntyLevel(parseInt(e.target.value))}
+                    className="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                  />
+               </div>
+               <div className="flex items-center justify-between px-2">
+                  <label className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">Economic Autonomy</label>
+                  <button 
+                   onClick={() => setEconomicAutonomy(!economicAutonomy)}
+                   className={`w-12 h-6 rounded-full transition-all relative ${economicAutonomy ? 'bg-emerald-600' : 'bg-slate-800'}`}
+                  >
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${economicAutonomy ? 'left-7' : 'left-1'}`}></div>
+                  </button>
                </div>
             </div>
 

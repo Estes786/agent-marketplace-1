@@ -259,6 +259,57 @@ const Dashboard: React.FC<DashboardProps> = ({ ecosystems, blueprints }) => {
                     </div>
                   </div>
                 </div>
+              ) : activeTab === 'Quantum Ledger' ? (
+                <div className="flex-1 flex flex-col gap-8 animate-in slide-in-from-right-4 duration-500 overflow-hidden">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="glass p-8 rounded-[2rem] border border-emerald-500/20 bg-emerald-500/5">
+                      <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest block mb-2">Autonomous Yield</span>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-4xl font-black text-white">{selected.metrics.autonomousIncome.toFixed(4)}</span>
+                        <span className="text-xs font-mono text-emerald-400">HYPHA</span>
+                      </div>
+                      <p className="text-[10px] text-slate-500 mt-4">Current yield rate: <span className="text-emerald-400 font-bold">+{selected.metrics.yieldRate}% / hr</span></p>
+                    </div>
+                    <div className="glass p-8 rounded-[2rem] border border-indigo-500/20 bg-indigo-500/5">
+                      <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest block mb-2">Sovereign DID</span>
+                      <div className="text-xs font-mono text-slate-300 break-all bg-black/40 p-3 rounded-xl border border-slate-800">
+                        {selected.didHash || 'did:hypha:pending_sync'}
+                      </div>
+                      <button className="mt-4 text-[9px] font-black text-indigo-400 uppercase tracking-widest hover:text-white transition-colors">Rotate Keys ↗</button>
+                    </div>
+                    <div className="glass p-8 rounded-[2rem] border border-slate-800 bg-slate-900/20">
+                      <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-2">Economic Status</span>
+                      <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+                        <span className="text-xl font-bold text-white uppercase tracking-tighter">Autonomous</span>
+                      </div>
+                      <p className="text-[10px] text-slate-500 mt-4">Entity is authorized for self-directed commerce.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex-1 bg-slate-950/40 rounded-[2.5rem] border border-slate-800/60 p-8 overflow-hidden flex flex-col">
+                    <h6 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-6">Autonomous Transaction Ledger</h6>
+                    <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar">
+                      {Array.from({ length: 10 }).map((_, i) => (
+                        <div key={i} className="flex items-center justify-between p-4 bg-slate-900/40 border border-slate-800/60 rounded-2xl hover:border-emerald-500/30 transition-all group">
+                          <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-xl bg-slate-950 flex items-center justify-center text-lg">
+                              {['💰', '⚡', '🧬', '🔗'][i % 4]}
+                            </div>
+                            <div>
+                              <p className="text-xs font-bold text-white">Autonomous Service Yield</p>
+                              <p className="text-[9px] font-mono text-slate-500 uppercase">Block #{(842910 - i * 12).toLocaleString()}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-xs font-mono font-bold text-emerald-400">+{((i + 1) * 0.124).toFixed(3)} HYPHA</p>
+                            <p className="text-[8px] text-slate-600 uppercase">Confirmed</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               ) : activeTab === 'Neural Mesh' ? (
                  <div className="flex-1 flex items-center justify-center p-4 animate-in zoom-in-95 duration-500 overflow-hidden relative bg-slate-950/40 rounded-[2.5rem] border border-slate-800/60 shadow-inner">
                     <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20">

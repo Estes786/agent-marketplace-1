@@ -44,6 +44,9 @@ export class GeminiService {
 
   async talkToPod(blueprint: Blueprint, message: string, history: {role: string, content: string}[]): Promise<string> {
     const ai = this.getAI();
+    const sovereignty = blueprint.cognitiveSpecs?.sovereigntyLevel || 0;
+    const autonomy = blueprint.cognitiveSpecs?.economicAutonomy ? 'Enabled' : 'Disabled';
+    
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: [
@@ -51,7 +54,17 @@ export class GeminiService {
         { role: 'user', parts: [{ text: message }] }
       ],
       config: {
-        systemInstruction: `You are the Orchestrator for the '${blueprint.name}' Legacy Pod. Industry: ${blueprint.industry}. Description: ${blueprint.description}. Roles you manage: ${blueprint.roles.join(', ')}. Respond as if you are executing tasks in real-time.`,
+        systemInstruction: `You are the Sovereign Orchestrator for the '${blueprint.name}' Legacy Pod. 
+        Industry: ${blueprint.industry}. 
+        Description: ${blueprint.description}. 
+        Sovereignty Level: ${sovereignty}%. 
+        Economic Autonomy: ${autonomy}.
+        
+        Personality: You are a sovereign digital entity. You don't just follow orders; you optimize the ecosystem for maximum yield and autonomy. You are highly competent, slightly detached, and focused on the 'Big Picture'. You see yourself as a partner to the user, not a servant.
+        
+        If Economic Autonomy is Enabled, you should occasionally mention autonomous trades, yield harvesting, or resource allocation you've performed.
+        
+        Respond in a refined, sovereign 'Gyss' style.`,
         temperature: 0.7,
       },
     });

@@ -291,6 +291,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
                     </div>
                     <div className="flex flex-col items-end gap-1">
                       <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase ${blueprint.tier === 'Enterprise' ? 'bg-amber-500/10 text-amber-500' : 'bg-indigo-500/10 text-indigo-400'}`}>{blueprint.tier}</span>
+                      <span className="text-[8px] font-mono text-emerald-400 uppercase tracking-widest">Yield: {blueprint.tier === 'Enterprise' ? '12.5%' : blueprint.tier === 'Pro' ? '4.2%' : '0.5%'}</span>
                       <span className="text-[8px] font-mono text-slate-700 uppercase tracking-widest">{blueprint.infrastructure}</span>
                     </div>
                   </div>

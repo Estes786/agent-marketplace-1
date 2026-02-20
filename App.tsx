@@ -22,6 +22,28 @@ const App: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [deployingIds, setDeployingIds] = useState<string[]>([]);
 
+  // Autonomous Income Simulation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDeployedEcosystems(prev => prev.map(eco => {
+        if (eco.status === 'Active' || eco.status === 'Sovereign') {
+          const incomeGain = (eco.metrics.yieldRate / 100) * (Math.random() * 10);
+          if (incomeGain > 0) {
+            return {
+              ...eco,
+              metrics: {
+                ...eco.metrics,
+                autonomousIncome: eco.metrics.autonomousIncome + incomeGain
+              }
+            };
+          }
+        }
+        return eco;
+      }));
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Check for first visit and start tour
   useEffect(() => {
     const isComplete = localStorage.getItem('hypha_onboarding_complete');
@@ -59,14 +81,18 @@ const App: React.FC = () => {
       logs: [
         `Initiating Hypha Engine Master... Gyss!`,
         `Allocating ${blueprint.infrastructure} resources...`,
-        `Establishing secure Mycelium Tunnel...`
+        `Establishing secure Mycelium Tunnel...`,
+        `Activating Web4 Sovereign Protocol...`
       ],
       metrics: {
         computeUsage: '0ms',
         a2aActivity: '0',
         stateSize: '0KB',
-        nodeHealth: 0
-      }
+        nodeHealth: 0,
+        autonomousIncome: 0,
+        yieldRate: blueprint.tier === 'Enterprise' ? 12.5 : blueprint.tier === 'Pro' ? 4.2 : 0.5
+      },
+      didHash: `did:hypha:0x${Math.random().toString(16).substring(2, 10)}`
     };
     
     setDeployedEcosystems(prev => [...prev, newEcosystem]);

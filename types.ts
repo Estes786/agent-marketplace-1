@@ -23,6 +23,8 @@ export interface CognitiveSpecs {
   reasoningDepth: number; // 0-100
   memoryPersistence: 'Volatile' | 'Linear' | 'Recursive';
   thinkingBudget: number; // tokens
+  sovereigntyLevel: number; // 0-100
+  economicAutonomy: boolean;
 }
 
 export interface Blueprint {
@@ -47,7 +49,7 @@ export interface DeployedEcosystem {
   id: string;
   blueprintId: string;
   name: string;
-  status: 'Active' | 'Hibernating' | 'Syncing';
+  status: 'Active' | 'Hibernating' | 'Syncing' | 'Sovereign';
   deployedAt: string;
   logs: string[];
   metrics: {
@@ -55,7 +57,10 @@ export interface DeployedEcosystem {
     a2aActivity: string;
     stateSize: string;
     nodeHealth: number;
+    autonomousIncome: number; // HYPHA earned
+    yieldRate: number; // % per hour
   };
+  didHash?: string;
 }
 
 export interface Message {
@@ -63,4 +68,13 @@ export interface Message {
   role: 'user' | 'assistant' | 'system';
   content: string;
   timestamp: Date;
+}
+
+declare global {
+  interface Window {
+    aistudio: {
+      hasSelectedApiKey: () => Promise<boolean>;
+      openSelectKey: () => Promise<void>;
+    };
+  }
 }
