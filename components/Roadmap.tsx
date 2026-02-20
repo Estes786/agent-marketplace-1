@@ -131,6 +131,61 @@ const Roadmap: React.FC = () => {
         </div>
       </div>
 
+      <div className="glass p-12 rounded-[3.5rem] border border-emerald-500/20 bg-emerald-950/20 space-y-12 relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-8 opacity-10 text-8xl">💎</div>
+        <div className="text-center space-y-4">
+          <div className="inline-block px-4 py-1 bg-emerald-500/20 text-emerald-400 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-500/30">
+            High-Fidelity Economic Truth
+          </div>
+          <h3 className="text-4xl font-black text-white uppercase tracking-tighter italic">The Holy Clarity: Profit Protocol</h3>
+          <p className="text-slate-400 text-sm max-w-2xl mx-auto font-medium">
+            Gyss! Here is the absolute truth on how the Hypha Engine converts autonomous intelligence into real-world value. 
+            No simulations, just pure Web4 economic execution.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {[
+            {
+              step: '01',
+              title: 'Infrastructure Provisioning',
+              desc: 'You deploy "Legacy Pods" (Agentic Microservices). These are digital assets that perform real work (Logistics, Content, Finance).',
+              money: 'Subscription Revenue',
+              icon: '🏗️'
+            },
+            {
+              step: '02',
+              title: 'Autonomous Execution',
+              desc: 'Your agents operate 24/7 on the Global Mesh. They execute arbitrage, optimize supply chains, and sell data to other agents.',
+              money: 'Direct Yield (HYPHA)',
+              icon: '⚡'
+            },
+            {
+              step: '03',
+              title: 'Liquidity Conversion',
+              desc: 'Earned HYPHA credits are converted into USD or re-invested to scale your node reputation and infrastructure capacity.',
+              money: 'Real-World Liquidity',
+              icon: '🏦'
+            }
+          ].map((item) => (
+            <div key={item.step} className="bg-slate-900/40 p-8 rounded-[2.5rem] border border-slate-800/60 space-y-4 hover:border-emerald-500/40 transition-all group">
+              <div className="w-12 h-12 rounded-2xl bg-slate-950 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                {item.icon}
+              </div>
+              <div className="space-y-1">
+                <span className="text-[10px] font-mono text-emerald-500 font-black uppercase tracking-widest">Step {item.step}</span>
+                <h4 className="text-xl font-bold text-white tracking-tight">{item.title}</h4>
+              </div>
+              <p className="text-slate-500 text-xs leading-relaxed">{item.desc}</p>
+              <div className="pt-4 border-t border-slate-800/60">
+                <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest block mb-1">Monetization Path</span>
+                <span className="text-xs font-bold text-emerald-400 uppercase tracking-tighter">{item.money}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="glass p-12 rounded-[3.5rem] border border-slate-800/60 bg-slate-950/40 space-y-12">
         <div className="text-center space-y-4">
           <h3 className="text-3xl font-black text-white uppercase tracking-tighter italic">Monetization Engine</h3>
