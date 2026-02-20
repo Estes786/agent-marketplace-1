@@ -10,13 +10,21 @@ interface DashboardProps {
   blueprints: Blueprint[];
   userStats?: UserStats;
   onClaimYield?: (amount: number) => void;
+  onStake?: (amount: number) => void;
+  onUnstake?: (amount: number) => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ ecosystems, blueprints, userStats, onClaimYield }) => {
+const Dashboard: React.FC<DashboardProps> = ({ ecosystems, blueprints, userStats, onClaimYield, onStake, onUnstake }) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const initialTab = (searchParams.get('tab') as any) || 'Telemetry';
   const [selectedId, setSelectedId] = useState<string | null>(ecosystems[0]?.id || null);
-  const [activeTab, setActiveTab] = useState<'Telemetry' | 'Neural Mesh' | 'Monitoring' | 'Console'>('Telemetry');
+  const [activeTab, setActiveTab] = useState<'Telemetry' | 'Neural Mesh' | 'Monitoring' | 'Quantum Ledger' | 'Governance' | 'Console'>(initialTab);
+
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab) setActiveTab(tab as any);
+  }, [searchParams]);
   
   // Console state
   const [chatInput, setChatInput] = useState('');
@@ -85,7 +93,7 @@ const Dashboard: React.FC<DashboardProps> = ({ ecosystems, blueprints, userStats
     }
   };
 
-  if (ecosystems.length === 0) {
+  if (ecosystems.length === 0 && activeTab !== 'Governance' && activeTab !== 'Quantum Ledger') {
     return (
       <div className="max-w-5xl mx-auto py-12 space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-700">
         <div className="text-center space-y-4">
@@ -128,7 +136,13 @@ const Dashboard: React.FC<DashboardProps> = ({ ecosystems, blueprints, userStats
         </div>
         
         <div className="space-y-3">
-          {ecosystems.map(eco => (
+          {ecosystems.length === 0 ? (
+            <div className="p-8 bg-slate-900/40 border border-slate-800/60 rounded-[2rem] text-center space-y-4">
+              <span className="text-4xl opacity-20">🧬</span>
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">No Active Pods</p>
+              <button onClick={() => navigate('/')} className="w-full py-3 bg-indigo-600/10 border border-indigo-500/30 text-indigo-400 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all">Deploy Pod</button>
+            </div>
+          ) : ecosystems.map(eco => (
             <button
               key={eco.id}
               onClick={() => {
@@ -196,36 +210,45 @@ const Dashboard: React.FC<DashboardProps> = ({ ecosystems, blueprints, userStats
       </div>
 
       <div className="lg:col-span-3 flex flex-col h-full gap-6">
-        {selected ? (
+        {(selected || activeTab === 'Governance' || activeTab === 'Web5 Protocol') ? (
           <div className="glass rounded-[3rem] border border-slate-800/60 overflow-hidden flex flex-col flex-1 shadow-3xl bg-slate-950/10">
             <div className="p-10 border-b border-slate-800/40 bg-gradient-to-b from-indigo-950/10 via-transparent to-transparent">
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 mb-10">
                 <div className="space-y-1">
                   <div className="flex items-center gap-3">
-                    <h3 className="text-4xl font-bold text-white tracking-tighter leading-none">{selected.name}</h3>
-                    <button className="p-2 hover:bg-slate-800 rounded-xl transition-colors text-slate-500">⚙️</button>
+                    <h3 className="text-4xl font-bold text-white tracking-tighter leading-none">
+                      {activeTab === 'Governance' ? 'Sovereign DAO' : activeTab === 'Web5 Protocol' ? 'Web5 Protocol' : selected?.name}
+                    </h3>
+                    {selected && <button className="p-2 hover:bg-slate-800 rounded-xl transition-colors text-slate-500">⚙️</button>}
                   </div>
-                  <p className="text-indigo-400 font-mono text-[10px] uppercase tracking-[0.4em] font-medium">Hypha Orchestration Protocol v1.2.0-STABLE</p>
+                  <p className="text-indigo-400 font-mono text-[10px] uppercase tracking-[0.4em] font-medium">
+                    {activeTab === 'Governance' ? 'Decentralized Autonomous Organization' : activeTab === 'Web5 Protocol' ? 'Decentralized Web Platform (DWP)' : 'Hypha Orchestration Protocol v1.2.0-STABLE'}
+                  </p>
                 </div>
                 
                 <div className="flex bg-slate-900/60 p-1.5 rounded-[1.5rem] border border-slate-800/60 shadow-inner overflow-x-auto scrollbar-hide">
-                  {['Telemetry', 'Neural Mesh', 'Monitoring', 'Console'].map(tab => (
-                    <button 
-                      key={tab} 
-                      onClick={() => setActiveTab(tab as any)} 
-                      className={`px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
-                        activeTab === tab 
-                        ? 'bg-slate-800 text-white shadow-2xl border border-slate-700/50' 
-                        : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/30'
-                      }`}
-                    >
-                      {tab}
-                    </button>
-                  ))}
+                  {['Telemetry', 'Neural Mesh', 'Monitoring', 'Web5 Protocol', 'Governance', 'Console'].map(tab => {
+                    const isDisabled = !selected && tab !== 'Governance' && tab !== 'Web5 Protocol';
+                    return (
+                      <button 
+                        key={tab} 
+                        disabled={isDisabled}
+                        onClick={() => setActiveTab(tab as any)} 
+                        className={`px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                          activeTab === tab 
+                          ? 'bg-slate-800 text-white shadow-2xl border border-slate-700/50' 
+                          : isDisabled ? 'opacity-30 cursor-not-allowed' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/30'
+                        }`}
+                      >
+                        {tab}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {selected && activeTab !== 'Governance' && activeTab !== 'Web5 Protocol' && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 {[
                   { label: 'Compute usage', value: '12.4ms', trend: 'down', color: 'text-emerald-400' },
                   { label: 'A2A Throughput', value: '1.4k/h', trend: 'up', color: 'text-white' },
@@ -241,9 +264,10 @@ const Dashboard: React.FC<DashboardProps> = ({ ecosystems, blueprints, userStats
                   </div>
                 ))}
               </div>
-            </div>
+            )}
+          </div>
 
-            <div className="flex-1 p-10 bg-black/5 flex flex-col min-h-0 relative">
+          <div className="flex-1 p-10 bg-black/5 flex flex-col min-h-0 relative">
               {activeTab === 'Telemetry' ? (
                 <div className="flex flex-col h-full animate-in fade-in slide-in-from-bottom-4 duration-500">
                   <div className="bg-[#020617]/80 rounded-[2.5rem] p-8 font-mono text-[11px] overflow-y-auto space-y-4 border border-slate-800/60 flex-1 shadow-inner custom-scrollbar">
@@ -261,71 +285,270 @@ const Dashboard: React.FC<DashboardProps> = ({ ecosystems, blueprints, userStats
                     </div>
                   </div>
                 </div>
-              ) : activeTab === 'Quantum Ledger' ? (
+              ) : activeTab === 'Web5 Protocol' ? (
                 <div className="flex-1 flex flex-col gap-8 animate-in slide-in-from-right-4 duration-500 overflow-hidden">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="glass p-8 rounded-[2rem] border border-emerald-500/20 bg-emerald-500/5">
-                      <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest block mb-2">Autonomous Yield</span>
+                      <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest block mb-2">Decentralized Web Node (DWN)</span>
                       <div className="flex items-baseline gap-2">
-                        <span className="text-4xl font-black text-white">{selected.metrics.autonomousIncome.toFixed(4)}</span>
-                        <span className="text-xs font-mono text-emerald-400">HYPHA</span>
+                        <span className="text-4xl font-black text-white">{selected?.metrics.dwnSyncStatus || 98}%</span>
+                        <span className="text-xs font-mono text-emerald-400">SYNCED</span>
                       </div>
-                      <p className="text-[10px] text-slate-500 mt-4">Current yield rate: <span className="text-emerald-400 font-bold">+{selected.metrics.yieldRate}% / hr</span></p>
+                      <div className="w-full h-1 bg-slate-800 rounded-full mt-4 overflow-hidden">
+                        <div className="h-full bg-emerald-500 animate-pulse" style={{ width: `${selected?.metrics.dwnSyncStatus || 98}%` }}></div>
+                      </div>
+                      <p className="text-[10px] text-slate-500 mt-4">Storage: <span className="text-emerald-400 font-bold">1.2 GB / 5 GB</span></p>
                     </div>
                     <div className="glass p-8 rounded-[2rem] border border-indigo-500/20 bg-indigo-500/5">
-                      <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest block mb-2">Sovereign DID</span>
+                      <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest block mb-2">Sovereign DID (Web5)</span>
                       <div className="text-xs font-mono text-slate-300 break-all bg-black/40 p-3 rounded-xl border border-slate-800">
-                        {selected.didHash || 'did:hypha:pending_sync'}
+                        {selected?.didHash || 'did:hypha:pending_sync'}
                       </div>
-                      <button className="mt-4 text-[9px] font-black text-indigo-400 uppercase tracking-widest hover:text-white transition-colors">Rotate Keys ↗</button>
+                      <div className="flex items-center gap-2 mt-4">
+                        <span className="text-[8px] font-black text-indigo-400 uppercase tracking-widest">Resolution:</span>
+                        <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">SUCCESS</span>
+                      </div>
+                    </div>
+                    <div className="glass p-8 rounded-[2rem] border border-purple-500/20 bg-purple-500/5">
+                      <span className="text-[9px] font-black text-purple-500 uppercase tracking-widest block mb-2">Verifiable Credentials</span>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-4xl font-black text-white">{selected?.metrics.verifiableCredentials || 3}</span>
+                        <span className="text-xs font-mono text-purple-400">ISSUED</span>
+                      </div>
+                      <button className="mt-4 w-full py-2 bg-purple-600/20 border border-purple-500/30 text-purple-400 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-purple-600 hover:text-white transition-all">Manage VCs</button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 flex-1 min-h-0">
+                    <div className="bg-slate-950/40 rounded-[2.5rem] border border-slate-800/60 p-8 overflow-hidden flex flex-col">
+                      <h6 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-6">Web5 Protocol Deep Dive</h6>
+                      <div className="flex-1 overflow-y-auto space-y-6 custom-scrollbar pr-2">
+                        <div className="space-y-3">
+                          <h7 className="text-xs font-bold text-white uppercase tracking-widest">Decentralized Identifiers (DIDs)</h7>
+                          <p className="text-[10px] text-slate-400 leading-relaxed">
+                            Web5 uses DIDs to provide globally unique, persistent identifiers that don't require a centralized registration authority. Your pod's DID is its sovereign identity across the decentralized web.
+                          </p>
+                          <div className="p-4 bg-slate-900/60 border border-slate-800/60 rounded-2xl font-mono text-[9px] text-indigo-300">
+                            {`{
+  "@context": "https://www.w3.org/ns/did/v1",
+  "id": "${selected?.didHash || 'did:hypha:...'}",
+  "verificationMethod": [{ ... }],
+  "service": [{ "id": "#dwn", "type": "DecentralizedWebNode" }]
+}`}
+                          </div>
+                        </div>
+                        <div className="space-y-3">
+                          <h7 className="text-xs font-bold text-white uppercase tracking-widest">Decentralized Web Nodes (DWNs)</h7>
+                          <p className="text-[10px] text-slate-400 leading-relaxed">
+                            DWNs are personal data stores that allow you to own your data. Your pod synchronizes its state across a mesh of DWNs, ensuring high availability and data sovereignty.
+                          </p>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="p-4 bg-slate-900/40 rounded-2xl border border-slate-800/60">
+                              <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest block mb-1">Sync Latency</span>
+                              <span className="text-sm font-bold text-emerald-400">12ms</span>
+                            </div>
+                            <div className="p-4 bg-slate-900/40 rounded-2xl border border-slate-800/60">
+                              <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest block mb-1">Mesh Nodes</span>
+                              <span className="text-sm font-bold text-indigo-400">12 Active</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-slate-950/40 rounded-[2.5rem] border border-slate-800/60 p-8 overflow-hidden flex flex-col">
+                      <h6 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-6">Transaction Ledger (Web5)</h6>
+                      <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar">
+                        {userStats?.transactions.map((tx) => (
+                          <div key={tx.id} className="flex items-center justify-between p-4 bg-slate-900/40 border border-slate-800/60 rounded-2xl hover:border-emerald-500/30 transition-all group">
+                            <div className="flex items-center gap-4">
+                              <div className="w-10 h-10 rounded-xl bg-slate-950 flex items-center justify-center text-lg">
+                                {tx.type === 'yield' ? '💰' : tx.type === 'subscription' ? '💳' : '⚡'}
+                              </div>
+                              <div>
+                                <p className="text-xs font-bold text-white">{tx.description}</p>
+                                <p className="text-[9px] font-mono text-slate-500 uppercase">{new Date(tx.timestamp).toLocaleString()}</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className={`text-xs font-mono font-bold ${tx.amount > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                                {tx.amount > 0 ? '+' : ''}{tx.amount.toFixed(2)} {tx.currency}
+                              </p>
+                              <p className="text-[8px] text-slate-600 uppercase">Verified</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : activeTab === 'Governance' ? (
+                <div className="flex-1 flex flex-col gap-8 animate-in slide-in-from-left-4 duration-500 overflow-hidden">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="glass p-8 rounded-[2rem] border border-indigo-500/20 bg-indigo-500/5 flex flex-col">
+                      <div className="flex justify-between items-start mb-4">
+                        <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest block">Staking Vault</span>
+                        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                          <span className="text-[8px] font-black text-emerald-400 uppercase">Projected APY: 18.5%</span>
+                        </div>
+                      </div>
+                      <div className="flex items-baseline gap-2 mb-6">
+                        <span className="text-4xl font-black text-white">{userStats?.stakedAmount?.toLocaleString() || 0}</span>
+                        <span className="text-xs font-mono text-indigo-400">HYPHA Staked</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3 mt-auto">
+                        <button 
+                          onClick={() => onStake?.(100)}
+                          className="py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all shadow-lg shadow-indigo-600/20 active:scale-95"
+                        >
+                          Stake 100
+                        </button>
+                        <button 
+                          onClick={() => onUnstake?.(100)}
+                          disabled={!userStats?.stakedAmount || userStats.stakedAmount < 100}
+                          className="py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-2xl text-[9px] font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Unstake
+                        </button>
+                      </div>
+                      <p className="text-[8px] text-slate-500 mt-4 text-center font-bold uppercase tracking-widest opacity-60">Epoch ends in 14h 22m</p>
+                    </div>
+                    <div className="glass p-8 rounded-[2rem] border border-purple-500/20 bg-purple-500/5">
+                      <span className="text-[9px] font-black text-purple-500 uppercase tracking-widest block mb-2">Governance Power</span>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-4xl font-black text-white">{userStats?.governancePower || 0}</span>
+                        <span className="text-xs font-mono text-purple-400">vHYPHA</span>
+                      </div>
+                      <p className="text-[10px] text-slate-500 mt-4">Rank: <span className="text-purple-400 font-bold">Sovereign Tier</span></p>
                     </div>
                     <div className="glass p-8 rounded-[2rem] border border-slate-800 bg-slate-900/20">
-                      <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-2">Economic Status</span>
+                      <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-2">Active Proposals</span>
                       <div className="flex items-center gap-3">
-                        <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
-                        <span className="text-xl font-bold text-white uppercase tracking-tighter">Autonomous</span>
+                        <div className="w-3 h-3 rounded-full bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]"></div>
+                        <span className="text-xl font-bold text-white uppercase tracking-tighter">3 Pending</span>
                       </div>
                       <div className="flex gap-2 mt-4">
-                        <button 
-                          onClick={() => onClaimYield?.(selected?.metrics.autonomousIncome || 0)}
-                          className="flex-1 py-2 bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all disabled:opacity-50"
-                          disabled={!selected || selected.metrics.autonomousIncome <= 0}
-                        >
-                          Claim Wealth
-                        </button>
-                        <button className="flex-1 py-2 bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all">Reinvest</button>
+                        <button className="flex-1 py-2 bg-slate-800 border border-slate-700 text-white rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-slate-700 transition-all">View DAO ↗</button>
+                        <button className="flex-1 py-2 bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all">Create Proposal</button>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex-1 bg-slate-950/40 rounded-[2.5rem] border border-slate-800/60 p-8 overflow-hidden flex flex-col">
-                    <h6 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-6">Global Transaction Ledger</h6>
-                    <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar">
-                      {userStats?.transactions.map((tx) => (
-                        <div key={tx.id} className="flex items-center justify-between p-4 bg-slate-900/40 border border-slate-800/60 rounded-2xl hover:border-emerald-500/30 transition-all group">
-                          <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-xl bg-slate-950 flex items-center justify-center text-lg">
-                              {tx.type === 'yield' ? '💰' : tx.type === 'subscription' ? '💳' : '⚡'}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 flex-1 min-h-0">
+                    <div className="bg-slate-950/40 rounded-[2.5rem] border border-slate-800/60 p-8 overflow-hidden flex flex-col">
+                      <div className="flex justify-between items-center mb-6">
+                        <h6 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Sovereign Governance Proposals</h6>
+                        <div className="flex gap-2">
+                          <button className="text-[8px] font-black text-indigo-400 uppercase tracking-widest">Active</button>
+                          <button className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Passed</button>
+                        </div>
+                      </div>
+                      <div className="flex-1 overflow-y-auto space-y-4 custom-scrollbar pr-2">
+                        {[
+                          { id: 'HIP-12', title: 'Increase Autonomous Yield Cap', status: 'Voting', votes: '84%', type: 'Economic', time: '2d left' },
+                          { id: 'HIP-13', title: 'Deploy Mycelium Mesh v2.0', status: 'Passed', votes: '92%', type: 'Infrastructure', time: 'Ended' },
+                          { id: 'HIP-14', title: 'Reduce A2A Transaction Fees', status: 'Draft', votes: '0%', type: 'Protocol', time: 'Draft' },
+                          { id: 'HIP-15', title: 'Expand Media Lab Compute', status: 'Voting', votes: '42%', type: 'Resources', time: '5d left' }
+                        ].map((prop) => (
+                          <div key={prop.id} className="p-6 bg-slate-900/40 border border-slate-800/60 rounded-3xl hover:border-indigo-500/30 transition-all group">
+                            <div className="flex justify-between items-start mb-4">
+                              <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-[9px] font-mono text-indigo-500 font-black uppercase tracking-widest">{prop.id}</span>
+                                  <span className="text-[8px] text-slate-600 font-bold uppercase tracking-widest">• {prop.time}</span>
+                                </div>
+                                <h5 className="text-sm font-bold text-white tracking-tight">{prop.title}</h5>
+                              </div>
+                              <span className={`px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest ${
+                                prop.status === 'Voting' ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' :
+                                prop.status === 'Passed' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                                'bg-slate-800 text-slate-500'
+                              }`}>
+                                {prop.status}
+                              </span>
                             </div>
-                            <div>
-                              <p className="text-xs font-bold text-white">{tx.description}</p>
-                              <p className="text-[9px] font-mono text-slate-500 uppercase">{new Date(tx.timestamp).toLocaleString()}</p>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-4">
+                                <span className="text-[9px] text-slate-600 uppercase font-black tracking-widest">{prop.type}</span>
+                                <div className="w-px h-3 bg-slate-800"></div>
+                                <div className="flex items-center gap-2">
+                                  <div className="w-16 h-1 bg-slate-800 rounded-full overflow-hidden">
+                                    <div className="h-full bg-indigo-500" style={{ width: prop.votes }}></div>
+                                  </div>
+                                  <span className="text-[9px] text-slate-400 font-bold">{prop.votes}</span>
+                                </div>
+                              </div>
+                              <button className="text-[9px] font-black text-indigo-400 uppercase tracking-widest hover:text-white transition-colors">Vote Now ↗</button>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <p className={`text-xs font-mono font-bold ${tx.amount > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                              {tx.amount > 0 ? '+' : ''}{tx.amount.toFixed(2)} {tx.currency}
-                            </p>
-                            <p className="text-[8px] text-slate-600 uppercase">Confirmed</p>
-                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="bg-slate-950/40 rounded-[2.5rem] border border-slate-800/60 p-8 overflow-hidden flex flex-col">
+                      <div className="flex justify-between items-center mb-6">
+                        <h6 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Yield Projection & Staking History</h6>
+                        <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Compounding</span>
+                      </div>
+                      
+                      {/* Projection Summary */}
+                      <div className="grid grid-cols-3 gap-4 mb-8">
+                        <div className="p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl">
+                          <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest block mb-1">Daily Yield</span>
+                          <p className="text-lg font-bold text-emerald-400">
+                            +{( (userStats?.stakedAmount || 0) * 0.185 / 365 ).toFixed(2)}
+                          </p>
                         </div>
-                      ))}
-                      {(!userStats?.transactions || userStats.transactions.length === 0) && (
-                        <div className="flex flex-col items-center justify-center h-full text-slate-600 space-y-4">
-                          <span className="text-4xl opacity-20">📜</span>
-                          <p className="text-[10px] font-black uppercase tracking-widest">No transactions detected in mesh</p>
+                        <div className="p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl">
+                          <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest block mb-1">Monthly Yield</span>
+                          <p className="text-lg font-bold text-emerald-400">
+                            +{( (userStats?.stakedAmount || 0) * 0.185 / 12 ).toFixed(2)}
+                          </p>
                         </div>
-                      )}
+                        <div className="p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl">
+                          <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest block mb-1">Annual Yield</span>
+                          <p className="text-lg font-bold text-emerald-400">
+                            +{( (userStats?.stakedAmount || 0) * 0.185 ).toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex-1 min-h-[200px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={[
+                            { day: 'Mon', yield: 120, staked: 1000 },
+                            { day: 'Tue', yield: 150, staked: 1000 },
+                            { day: 'Wed', yield: 180, staked: 1200 },
+                            { day: 'Thu', yield: 220, staked: 1200 },
+                            { day: 'Fri', yield: 280, staked: 1500 },
+                            { day: 'Sat', yield: 350, staked: 1500 },
+                            { day: 'Sun', yield: 420, staked: 1500 },
+                          ]}>
+                            <defs>
+                              <linearGradient id="colorYield" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                                <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} opacity={0.2} />
+                            <XAxis dataKey="day" stroke="#475569" fontSize={10} axisLine={false} tickLine={false} />
+                            <Tooltip 
+                              contentStyle={{ backgroundColor: '#020617', border: '1px solid #1e293b', borderRadius: '16px', fontSize: '10px' }}
+                            />
+                            <Area type="monotone" dataKey="yield" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorYield)" />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <div className="mt-6 pt-6 border-t border-slate-800/60 grid grid-cols-2 gap-4">
+                        <div className="p-4 bg-slate-900/40 rounded-2xl border border-slate-800/60">
+                          <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest block mb-1">Total Rewards</span>
+                          <span className="text-lg font-bold text-white">1,240.5 HYPHA</span>
+                        </div>
+                        <div className="p-4 bg-slate-900/40 rounded-2xl border border-slate-800/60">
+                          <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest block mb-1">Next Epoch</span>
+                          <span className="text-lg font-bold text-indigo-400">14:22:05</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

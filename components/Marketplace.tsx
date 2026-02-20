@@ -37,7 +37,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
   const [selectedBlueprint, setSelectedBlueprint] = useState<Blueprint | null>(null);
   const [showCopyToast, setShowCopyToast] = useState(false);
   const [compareList, setCompareList] = useState<string[]>([]);
-  const [showAnalytics, setShowAnalytics] = useState(false);
+  const [viewMode, setViewMode] = useState<'market' | 'insights' | 'tokenomics'>('market');
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -98,7 +98,33 @@ const Marketplace: React.FC<MarketplaceProps> = ({
     { name: 'Direct', value: 10 }
   ];
 
-  const COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#10b981'];
+  const tokenDistribution = [
+    { name: 'Ecosystem Yield', value: 40 },
+    { name: 'Staking Rewards', value: 25 },
+    { name: 'Development Fund', value: 15 },
+    { name: 'Public Liquidity', value: 10 },
+    { name: 'DAO Treasury', value: 10 }
+  ];
+
+  const stakingAPYHistory = [
+    { month: 'Jan', apy: 12.5 },
+    { month: 'Feb', apy: 14.2 },
+    { month: 'Mar', apy: 13.8 },
+    { month: 'Apr', apy: 15.5 },
+    { month: 'May', apy: 18.2 },
+    { month: 'Jun', apy: 17.8 },
+    { month: 'Jul', apy: 18.5 }
+  ];
+
+  const podRevenueStreams = [
+    { category: 'Logistics', revenue: 4500 },
+    { category: 'Content', revenue: 3200 },
+    { category: 'Finance', revenue: 6800 },
+    { category: 'Personal', revenue: 2100 },
+    { category: 'Security', revenue: 5400 }
+  ];
+
+  const COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#10b981', '#f59e0b'];
 
   const handleQuickDeploy = (trend: Trend) => {
     const content = `${trend.title} ${trend.description}`.toLowerCase();
@@ -184,26 +210,32 @@ const Marketplace: React.FC<MarketplaceProps> = ({
         <div className="flex items-center gap-3">
           <div className="w-2 h-6 bg-indigo-500 rounded-full shadow-[0_0_10px_rgba(99,102,241,0.5)]"></div>
           <h3 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
-            Hypha Orchestration Hub <span className="text-indigo-500 font-mono">v2.1</span>
+            Hypha Web5 Orchestration Hub <span className="text-indigo-500 font-mono">v5.0.0-ALPHA</span>
           </h3>
         </div>
         <div className="flex bg-slate-900/60 p-1.5 rounded-2xl border border-slate-800/60">
           <button 
-            onClick={() => setShowAnalytics(false)}
-            className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${!showAnalytics ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+            onClick={() => setViewMode('market')}
+            className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'market' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
           >
             Market
           </button>
           <button 
-            onClick={() => setShowAnalytics(true)}
-            className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${showAnalytics ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+            onClick={() => setViewMode('insights')}
+            className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'insights' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
           >
             Insights
+          </button>
+          <button 
+            onClick={() => setViewMode('tokenomics')}
+            className={`px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === 'tokenomics' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+          >
+            Tokenomics
           </button>
         </div>
       </div>
 
-      {!showAnalytics ? (
+      {viewMode === 'market' ? (
         <>
           {/* Marketplace Content */}
           <div className="space-y-4" data-tour="grounding-engine">
@@ -298,6 +330,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
 
                   <h4 className="text-xl font-bold text-white mb-2 group-hover:text-indigo-400 transition-colors flex items-center gap-2">
                     {blueprint.name}
+                    <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded-md border border-emerald-500/20 font-black uppercase tracking-tighter" title="On-chain Verified DID">✓ DID</span>
                     {deployedPod && <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>}
                   </h4>
                   <p className="text-slate-500 text-[11px] leading-relaxed line-clamp-2 mb-6">{blueprint.description}</p>
@@ -353,7 +386,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
             })}
           </div>
         </>
-      ) : (
+      ) : viewMode === 'insights' ? (
         /* Analytics Dashboard */
         <div className="space-y-8 animate-in zoom-in-95 duration-500">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -465,6 +498,122 @@ const Marketplace: React.FC<MarketplaceProps> = ({
                     </Pie>
                     <Tooltip contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '12px', fontSize: '10px' }} />
                   </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* Tokenomics Dashboard */
+        <div className="space-y-8 animate-in zoom-in-95 duration-500">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              { label: 'Total HYPHA Supply', value: '1,000,000,000', icon: '💎', color: 'text-indigo-400' },
+              { label: 'Circulating Supply', value: '420,690,000', icon: '🌊', color: 'text-emerald-400' },
+              { label: 'Total Staked', value: '156,000,000', icon: '🔒', color: 'text-amber-400' }
+            ].map((stat, i) => (
+              <div key={i} className="glass p-8 rounded-[2.5rem] border border-slate-800/60 shadow-xl">
+                <div className="flex justify-between items-start mb-4">
+                  <span className="text-3xl">{stat.icon}</span>
+                  <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Protocol Stats</span>
+                </div>
+                <p className={`text-3xl font-black ${stat.color} mb-1 tracking-tighter`}>{stat.value}</p>
+                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Token Distribution Pie Chart */}
+            <div className="glass p-10 rounded-[3rem] border border-slate-800/60 h-[450px] flex flex-col">
+              <div className="flex justify-between items-center mb-8">
+                <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">HYPHA Allocation Matrix</h4>
+                <span className="text-[10px] bg-indigo-500/10 text-indigo-400 px-3 py-1 rounded-full border border-indigo-500/20 font-bold uppercase">Genesis Phase</span>
+              </div>
+              <div className="flex-1">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={tokenDistribution}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={80}
+                      outerRadius={120}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {tokenDistribution.map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#020617', border: '1px solid #1e293b', borderRadius: '16px', fontSize: '10px' }}
+                      itemStyle={{ color: '#fff' }}
+                    />
+                    <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.1em', paddingTop: '20px' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Staking APY Line Chart */}
+            <div className="glass p-10 rounded-[3rem] border border-slate-800/60 h-[450px] flex flex-col">
+              <div className="flex justify-between items-center mb-8">
+                <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Sovereign Staking Yield (APY %)</h4>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                  <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">Live Yield</span>
+                </div>
+              </div>
+              <div className="flex-1">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={stakingAPYHistory}>
+                    <defs>
+                      <linearGradient id="colorApy" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} opacity={0.2} />
+                    <XAxis dataKey="month" stroke="#475569" fontSize={10} axisLine={false} tickLine={false} />
+                    <YAxis stroke="#475569" fontSize={10} axisLine={false} tickLine={false} unit="%" />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#020617', border: '1px solid #1e293b', borderRadius: '16px', fontSize: '10px' }}
+                      itemStyle={{ color: '#10b981' }}
+                    />
+                    <Area type="monotone" dataKey="apy" stroke="#10b981" strokeWidth={4} fillOpacity={1} fill="url(#colorApy)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Revenue Streams Bar Chart */}
+            <div className="glass p-10 rounded-[3rem] border border-slate-800/60 h-[450px] flex flex-col lg:col-span-2">
+              <div className="flex justify-between items-center mb-8">
+                <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Protocol Revenue by Industry Vertical</h4>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-indigo-500 rounded-sm"></div>
+                    <span className="text-[9px] text-slate-500 font-bold uppercase">HYPHA Revenue</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={podRevenueStreams}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} opacity={0.2} />
+                    <XAxis dataKey="category" stroke="#475569" fontSize={10} axisLine={false} tickLine={false} />
+                    <YAxis stroke="#475569" fontSize={10} axisLine={false} tickLine={false} />
+                    <Tooltip 
+                      cursor={{fill: 'rgba(99, 102, 241, 0.05)'}}
+                      contentStyle={{ backgroundColor: '#020617', border: '1px solid #1e293b', borderRadius: '16px', fontSize: '10px' }}
+                    />
+                    <Bar dataKey="revenue" radius={[10, 10, 0, 0]}>
+                      {podRevenueStreams.map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
                 </ResponsiveContainer>
               </div>
             </div>

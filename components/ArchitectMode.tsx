@@ -26,10 +26,10 @@ const ArchitectMode: React.FC<ArchitectModeProps> = ({ onSaveBlueprint }) => {
   const [blueprintTier, setBlueprintTier] = useState<'Free' | 'Pro' | 'Enterprise'>('Free');
   const [blueprintInfra, setBlueprintInfra] = useState<'Edge Worker' | 'Cloud Pod' | 'Hybrid Nexus'>('Edge Worker');
 
-  // Advanced Web4 Spec State
+  // Advanced Web5 Spec State
   const [reasoningDepth, setReasoningDepth] = useState(70);
-  const [memoryPersistence, setMemoryPersistence] = useState<'Volatile' | 'Linear' | 'Recursive'>('Linear');
-  const [sovereigntyLevel, setSovereigntyLevel] = useState(85);
+  const [memoryPersistence, setMemoryPersistence] = useState<'Volatile' | 'Linear' | 'Recursive'>('Recursive');
+  const [sovereigntyLevel, setSovereigntyLevel] = useState(95);
   const [economicAutonomy, setEconomicAutonomy] = useState(true);
 
   useEffect(() => {
@@ -53,17 +53,17 @@ const ArchitectMode: React.FC<ArchitectModeProps> = ({ onSaveBlueprint }) => {
     setDepthPercent(0);
     
     const steps = [
-      'INIT_ARCH_SESSION_v4.1 [WEB4_CORE]',
-      'AUTHENTICATING_USER_DID_IDENTITY...',
+      'INIT_ARCH_SESSION_v5.0 [WEB5_CORE]',
+      'AUTHENTICATING_USER_DID_IDENTITY_v5...',
       'MAPPING_REQUIREMENTS_TO_NEURAL_TOPOLOGY...',
-      'HYPHA_GROUNDING_ENGINE_SYNCING_v2...',
+      'HYPHA_GROUNDING_ENGINE_SYNCING_v5...',
       'INJECTING_MYCELIUM_RECURSIVE_ROOTS...',
       'EVALUATING_A2A_ORCHESTRATION_CAPACITY...',
       'CONFIGURING_ZK_DATA_VAULTS...',
       'PERFORMING_QUANTUM_SECURITY_AUDIT...',
       'VALIDATING_SOVEREIGN_COMPLIANCE_ROOTS...',
-      'SPAWNING_DISTRIBUTED_WEB4_WORKER_NODES...',
-      'DEEP_REASONING_ENGINE_ACTIVE [GEMINI_3_PRO]...',
+      'SPAWNING_DISTRIBUTED_WEB5_WORKER_NODES...',
+      'DEEP_REASONING_ENGINE_ACTIVE [GEMINI_3.1_PRO]...',
       'SYNTHESIZING_AUTONOMOUS_ENTITY_BLUEPRINT...',
       'OPTIMIZING_COGNITIVE_PAYLOAD...',
       'ARCHITECTURE_LOCKED_FOR_MESH_DEPLOYMENT'
@@ -93,13 +93,14 @@ const ArchitectMode: React.FC<ArchitectModeProps> = ({ onSaveBlueprint }) => {
 
     const dynamicFeatures = [
       ...selectedRoles.map(r => `${r.replace(/^The\s+/, '')} Optimization`),
-      'Web4 Autonomous Protocol',
+      'Web5 Autonomous Protocol',
       'DID-Linked Identity Core',
-      'Recursive Mycelium Memory'
+      'Recursive Mycelium Memory',
+      'DWN Data Sovereignty'
     ];
 
     const newBlueprint: Blueprint = {
-      id: `web4-${Date.now()}`,
+      id: `web5-${Date.now()}`,
       name: blueprintName,
       industry: blueprintIndustry,
       description: result.substring(0, 400) + '...',
@@ -123,7 +124,7 @@ const ArchitectMode: React.FC<ArchitectModeProps> = ({ onSaveBlueprint }) => {
 
     onSaveBlueprint(newBlueprint);
     setShowSaveForm(false);
-    alert('Web4 Autonomous Entity Synchronized! Gyss!');
+    alert('Web5 Autonomous Entity Synchronized! Gyss!');
     navigate('/');
   };
 
@@ -136,9 +137,9 @@ const ArchitectMode: React.FC<ArchitectModeProps> = ({ onSaveBlueprint }) => {
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
       <div className="text-center space-y-4 mb-12">
-        <h2 className="text-5xl font-black text-white tracking-tighter uppercase italic">Web4 Architect 2.0</h2>
+        <h2 className="text-5xl font-black text-white tracking-tighter uppercase italic">Web5 Architect 5.0</h2>
         <p className="text-slate-400 max-w-2xl mx-auto text-sm font-medium tracking-wide">
-          Synthesize standalone <span className="text-indigo-400 font-mono">Autonomous Entities</span> with deep cognitive specs and recursive memory roots.
+          Synthesize standalone <span className="text-indigo-400 font-mono">Autonomous Entities</span> with deep cognitive specs and recursive Web5 memory roots.
         </p>
       </div>
 
@@ -152,7 +153,7 @@ const ArchitectMode: React.FC<ArchitectModeProps> = ({ onSaveBlueprint }) => {
               <textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                placeholder="Describe your Web4 system... e.g., A multi-role autonomous firm with internal audit, legal grounding, and self-optimizing revenue nodes."
+                placeholder="Describe your Web5 system... e.g., A multi-role autonomous firm with internal audit, legal grounding, and self-optimizing revenue nodes."
                 className="w-full h-44 bg-slate-900 border border-slate-800 rounded-3xl p-6 text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all resize-none shadow-inner font-medium text-sm leading-relaxed"
               />
             </div>
@@ -186,7 +187,7 @@ const ArchitectMode: React.FC<ArchitectModeProps> = ({ onSaveBlueprint }) => {
                </div>
             </div>
 
-            {/* Web4 Sovereignty Tuning */}
+            {/* Web5 Sovereignty Tuning */}
             <div className="grid grid-cols-2 gap-6 p-6 bg-indigo-500/5 rounded-3xl border border-indigo-500/20 shadow-inner">
                <div className="space-y-3">
                   <div className="flex justify-between items-center">
@@ -223,7 +224,7 @@ const ArchitectMode: React.FC<ArchitectModeProps> = ({ onSaveBlueprint }) => {
               ) : (
                 <>
                   <span className="group-hover:rotate-12 transition-transform">⚡</span>
-                  Unlock Web4 Logic
+                  Unlock Web5 Logic
                 </>
               )}
             </button>
@@ -231,7 +232,7 @@ const ArchitectMode: React.FC<ArchitectModeProps> = ({ onSaveBlueprint }) => {
             {isArchitecting && (
               <div className="space-y-4 animate-in slide-in-from-top-4">
                 <div className="flex justify-between items-center px-1">
-                  <p className="text-[10px] text-indigo-400 uppercase font-black tracking-widest">Web4 Thinking Thread</p>
+                  <p className="text-[10px] text-indigo-400 uppercase font-black tracking-widest">Web5 Thinking Thread</p>
                   <span className="text-[10px] font-mono text-indigo-300">{depthPercent}% Synthesis</span>
                 </div>
                 <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
@@ -258,7 +259,7 @@ const ArchitectMode: React.FC<ArchitectModeProps> = ({ onSaveBlueprint }) => {
               <div className="text-center space-y-6">
                 <div className="text-5xl">⚛️</div>
                 <h4 className="text-2xl font-black text-white uppercase tracking-tighter italic">Entity Logic Verified</h4>
-                <p className="text-slate-400 text-sm font-medium">This design meets Web4 autonomy standards. Synchronize to the Global Mesh? Gyss!</p>
+                <p className="text-slate-400 text-sm font-medium">This design meets Web5 autonomy standards. Synchronize to the Global Mesh? Gyss!</p>
                 <button 
                   onClick={() => setShowSaveForm(true)}
                   className="w-full py-5 bg-white text-slate-950 rounded-[1.5rem] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl"
@@ -345,16 +346,16 @@ const ArchitectMode: React.FC<ArchitectModeProps> = ({ onSaveBlueprint }) => {
                 disabled={!blueprintName || selectedRoles.length === 0}
                 className="w-full py-5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-[1.5rem] font-black text-xl transition-all shadow-2xl shadow-emerald-600/20 disabled:opacity-50 active:scale-95"
               >
-                Sync to Web4 Marketplace
+                Sync to Web5 Marketplace
               </button>
             </div>
           )}
         </div>
 
-        {/* Web4 Spec Viewer */}
+        {/* Web5 Spec Viewer */}
         <div className="glass rounded-[2.5rem] p-12 bg-slate-900/20 relative overflow-hidden flex flex-col min-h-[700px] border border-slate-800 shadow-inner">
           <div className="absolute top-0 right-0 p-8 flex gap-2">
-            <span className="text-[10px] font-mono text-indigo-400 bg-indigo-950/40 px-4 py-2 rounded-2xl border border-indigo-500/20 uppercase tracking-widest font-black">Architecture_Output::v4.1-STABLE</span>
+            <span className="text-[10px] font-mono text-indigo-400 bg-indigo-950/40 px-4 py-2 rounded-2xl border border-indigo-500/20 uppercase tracking-widest font-black">Architecture_Output::v5.0-STABLE</span>
           </div>
           
           <div className="flex-1 mt-10 overflow-y-auto pr-4 custom-scrollbar">
@@ -368,7 +369,7 @@ const ArchitectMode: React.FC<ArchitectModeProps> = ({ onSaveBlueprint }) => {
               <div className="h-full flex flex-col items-center justify-center text-center opacity-30 mt-12">
                 <div className="text-8xl mb-8 grayscale animate-pulse">⚛️</div>
                 <p className="font-mono text-xs uppercase tracking-[0.6em] font-black mb-4">Awaiting_Neural_Signal...</p>
-                <p className="text-[10px] max-w-[300px] leading-relaxed uppercase tracking-widest font-medium">Initiate Web4 architectural synthesis to witness the Mycelium Engine's deep recursive reasoning layer.</p>
+                <p className="text-[10px] max-w-[300px] leading-relaxed uppercase tracking-widest font-medium">Initiate Web5 architectural synthesis to witness the Mycelium Engine's deep recursive reasoning layer.</p>
               </div>
             )}
           </div>

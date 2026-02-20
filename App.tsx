@@ -23,8 +23,27 @@ const App: React.FC = () => {
     usdBalance: 1500,
     totalYield: 0,
     activeNodes: 0,
-    transactions: []
+    transactions: [],
+    isWalletConnected: false,
+    stakedAmount: 0,
+    governancePower: 0
   });
+
+  const handleConnectWallet = () => {
+    if (userStats.isWalletConnected) return;
+    
+    // Simulate DID connection
+    const fakeAddress = `0x${Math.random().toString(16).substring(2, 10)}...${Math.random().toString(16).substring(2, 6)}`;
+    setUserStats(prev => ({
+      ...prev,
+      isWalletConnected: true,
+      walletAddress: fakeAddress,
+      governancePower: 120
+    }));
+    
+    setIsGaniOpen(true);
+    // GANI will welcome the user in the assistant component based on state
+  };
   const [isGaniOpen, setIsGaniOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [deployingIds, setDeployingIds] = useState<string[]>([]);
@@ -109,6 +128,48 @@ const App: React.FC = () => {
     handleDeploy(blueprint);
   };
 
+  const handleStake = (amount: number) => {
+    if (userStats.hyphaBalance < amount) return;
+    setUserStats(prev => ({
+      ...prev,
+      hyphaBalance: prev.hyphaBalance - amount,
+      stakedAmount: prev.stakedAmount + amount,
+      governancePower: prev.governancePower + (amount * 1.2),
+      transactions: [
+        { 
+          id: `st-${Date.now()}`, 
+          type: 'trade', 
+          amount, 
+          currency: 'HYPHA', 
+          timestamp: new Date(), 
+          description: 'HYPHA Staking' 
+        },
+        ...prev.transactions
+      ]
+    }));
+  };
+
+  const handleUnstake = (amount: number) => {
+    if (userStats.stakedAmount < amount) return;
+    setUserStats(prev => ({
+      ...prev,
+      hyphaBalance: prev.hyphaBalance + amount,
+      stakedAmount: prev.stakedAmount - amount,
+      governancePower: Math.max(0, prev.governancePower - (amount * 1.2)),
+      transactions: [
+        { 
+          id: `ust-${Date.now()}`, 
+          type: 'trade', 
+          amount, 
+          currency: 'HYPHA', 
+          timestamp: new Date(), 
+          description: 'HYPHA Unstaking' 
+        },
+        ...prev.transactions
+      ]
+    }));
+  };
+
   const handleDeploy = (blueprint: Blueprint) => {
     setDeployingIds(prev => [...prev, blueprint.id]);
 
@@ -136,7 +197,9 @@ const App: React.FC = () => {
         stateSize: '0KB',
         nodeHealth: 0,
         autonomousIncome: 0,
-        yieldRate: blueprint.tier === 'Enterprise' ? 12.5 : blueprint.tier === 'Pro' ? 4.2 : 0.5
+        yieldRate: blueprint.tier === 'Enterprise' ? 12.5 : blueprint.tier === 'Pro' ? 4.2 : 0.5,
+        dwnSyncStatus: 0,
+        verifiableCredentials: Math.floor(Math.random() * 5)
       },
       didHash: `did:hypha:0x${Math.random().toString(16).substring(2, 10)}`
     };
@@ -180,6 +243,9 @@ const App: React.FC = () => {
           credits={userStats.hyphaBalance} 
           activePodsCount={deployedEcosystems.length} 
           toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+          isWalletConnected={userStats.isWalletConnected}
+          walletAddress={userStats.walletAddress}
+          onConnectWallet={handleConnectWallet}
         />
         
         <main className="flex-1 overflow-y-auto p-4 md:p-8 scrollbar-hide pb-24 lg:pb-8">
@@ -200,6 +266,8 @@ const App: React.FC = () => {
                 blueprints={blueprints} 
                 userStats={userStats}
                 onClaimYield={handleClaimYield}
+                onStake={handleStake}
+                onUnstake={handleUnstake}
               />
             } />
             <Route path="/architect" element={<ArchitectMode onSaveBlueprint={handleSaveBlueprint} />} />

@@ -48,10 +48,10 @@ const Roadmap: React.FC = () => {
           <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse"></span>
           The Path to Sovereign Wealth
         </div>
-        <h2 className="text-5xl font-black text-white tracking-tighter uppercase italic">Web4 Wealth Journey</h2>
+        <h2 className="text-5xl font-black text-white tracking-tighter uppercase italic">Web5 Wealth Journey</h2>
         <p className="text-slate-400 max-w-2xl mx-auto text-sm font-medium leading-relaxed">
           Gyss! Follow the Hypha Roadmap to transform from a node operator into a Sovereign Digital Emperor. 
-          The Mycelium Engine is ready to generate autonomous income for you.
+          The Web5 Mycelium Engine is ready to generate autonomous income for you.
         </p>
       </div>
 
@@ -112,12 +112,13 @@ const Roadmap: React.FC = () => {
           <p className="text-slate-500 text-xs font-mono mt-2 uppercase tracking-widest">From Static Data to Sovereign Wealth</p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           {[
             { v: '1.0', label: 'Read', desc: 'Static Blueprints', color: 'slate' },
             { v: '2.0', label: 'Write', desc: 'Marketplace UI', color: 'blue' },
             { v: '3.0', label: 'Own', desc: 'DID & Tokens', color: 'emerald' },
-            { v: '4.0', label: 'Execute', desc: 'Autonomous Wealth', color: 'indigo' }
+            { v: '4.0', label: 'Execute', desc: 'Autonomous Wealth', color: 'indigo' },
+            { v: '5.0', label: 'Sovereign', desc: 'DID + DWN + Mesh', color: 'purple' }
           ].map((web) => (
             <div key={web.v} className="glass p-6 rounded-3xl border border-slate-800/60 text-center space-y-3 group hover:border-indigo-500/40 transition-all">
               <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Web {web.v}</span>
@@ -140,7 +141,7 @@ const Roadmap: React.FC = () => {
           <h3 className="text-4xl font-black text-white uppercase tracking-tighter italic">The Holy Clarity: Profit Protocol</h3>
           <p className="text-slate-400 text-sm max-w-2xl mx-auto font-medium">
             Gyss! Here is the absolute truth on how the Hypha Engine converts autonomous intelligence into real-world value. 
-            No simulations, just pure Web4 economic execution.
+            No simulations, just pure Web5 economic execution.
           </p>
         </div>
 
@@ -234,7 +235,7 @@ const Roadmap: React.FC = () => {
         <div className="text-5xl">🚀</div>
         <h3 className="text-3xl font-black text-white uppercase tracking-tighter italic">Ready to Begin Your Empire?</h3>
         <p className="text-slate-400 max-w-xl mx-auto text-sm font-medium">
-          The Web4 economy waits for no one. Deploy your first Sovereign Pod today and start generating autonomous wealth. 
+          The Web5 economy waits for no one. Deploy your first Sovereign Pod today and start generating autonomous wealth. 
           Your node reputation is currently <span className="text-emerald-400 font-bold">98.4%</span>.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

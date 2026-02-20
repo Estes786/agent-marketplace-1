@@ -6,9 +6,19 @@ interface HeaderProps {
   credits?: number;
   activePodsCount?: number;
   toggleSidebar?: () => void;
+  isWalletConnected?: boolean;
+  walletAddress?: string;
+  onConnectWallet?: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ credits = 0, activePodsCount = 0, toggleSidebar }) => {
+const Header: React.FC<HeaderProps> = ({ 
+  credits = 0, 
+  activePodsCount = 0, 
+  toggleSidebar,
+  isWalletConnected = false,
+  walletAddress,
+  onConnectWallet
+}) => {
   const location = useLocation();
   const navigate = useNavigate();
   
@@ -101,6 +111,27 @@ const Header: React.FC<HeaderProps> = ({ credits = 0, activePodsCount = 0, toggl
         </div>
 
         <div className="flex items-center gap-2 md:gap-4">
+          <button 
+            onClick={onConnectWallet}
+            className={`h-10 px-4 rounded-2xl border transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${
+              isWalletConnected 
+              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' 
+              : 'bg-indigo-600 hover:bg-indigo-500 border-indigo-400 text-white shadow-lg shadow-indigo-600/20'
+            }`}
+          >
+            {isWalletConnected ? (
+              <>
+                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                {walletAddress}
+              </>
+            ) : (
+              <>
+                <span>Connect DID</span>
+                <span className="text-xs">🔑</span>
+              </>
+            )}
+          </button>
+
           <button className="h-10 w-10 rounded-2xl border border-slate-800 flex items-center justify-center hover:bg-slate-800/50 transition-all relative group shrink-0">
             <span className="text-lg group-hover:scale-110 transition-transform">🔔</span>
             <span className="absolute top-2 right-2 w-2 h-2 bg-indigo-500 rounded-full border-2 border-slate-900"></span>

@@ -59,6 +59,8 @@ export interface DeployedEcosystem {
     nodeHealth: number;
     autonomousIncome: number; // HYPHA earned
     yieldRate: number; // % per hour
+    dwnSyncStatus: number; // 0-100%
+    verifiableCredentials: number;
   };
   didHash?: string;
 }
@@ -78,6 +80,10 @@ export interface UserStats {
   totalYield: number;
   activeNodes: number;
   transactions: Transaction[];
+  isWalletConnected: boolean;
+  walletAddress?: string;
+  stakedAmount: number;
+  governancePower: number;
 }
 
 export interface Message {

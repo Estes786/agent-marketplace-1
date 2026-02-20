@@ -26,7 +26,8 @@ const Sidebar: React.FC<SidebarProps> = ({ deployedCount, isOpen = false, setIsO
   const navItems = [
     { path: '/', label: 'Marketplace', icon: '🏪' },
     { path: '/dashboard', label: 'Command Center', icon: '📊', badge: deployedCount > 0 ? deployedCount : null },
-    { path: '/architect', label: 'Web4 Architect', icon: '🏗️' },
+    { path: '/dashboard?tab=Governance', label: 'Sovereign DAO', icon: '⚖️' },
+    { path: '/architect', label: 'Web5 Architect', icon: '🏗️' },
     { path: '/roadmap', label: 'Wealth Journey', icon: '🚀' },
     { path: '/media-lab', label: 'Visual Intel Lab', icon: '🎬' },
   ];
@@ -54,7 +55,7 @@ const Sidebar: React.FC<SidebarProps> = ({ deployedCount, isOpen = false, setIsO
             </div>
             <div>
               <h1 className="font-black text-2xl leading-none tracking-tighter text-white">GANI HYPHA</h1>
-              <p className="text-[9px] text-indigo-500 uppercase tracking-[0.4em] font-black mt-2 font-mono">Web4_Core v4.1</p>
+              <p className="text-[9px] text-indigo-500 uppercase tracking-[0.4em] font-black mt-2 font-mono">Web5_Core v5.0.0</p>
             </div>
           </div>
           <button onClick={handleClose} className="lg:hidden text-slate-500 hover:text-white transition-colors">✕</button>
@@ -89,11 +90,11 @@ const Sidebar: React.FC<SidebarProps> = ({ deployedCount, isOpen = false, setIsO
           })}
         </nav>
 
-        {/* Web4 Status Bar */}
+        {/* Web5 Status Bar */}
         <div className="px-8 mb-4">
            <div className="bg-slate-900/40 rounded-2xl p-4 border border-slate-800/60 flex items-center justify-between">
               <div className="flex flex-col">
-                 <span className="text-[8px] font-black text-slate-700 uppercase tracking-widest">Global Mesh Pulse</span>
+                 <span className="text-[8px] font-black text-slate-700 uppercase tracking-widest">Web5 Mesh Pulse</span>
                  <span className="text-[10px] font-mono text-indigo-400 font-bold">{syncPulse}% SYNC</span>
               </div>
               <div className="flex gap-0.5">
@@ -133,8 +134,8 @@ const Sidebar: React.FC<SidebarProps> = ({ deployedCount, isOpen = false, setIsO
                 <div className="absolute inset-0 w-3 h-3 rounded-full bg-emerald-500 animate-ping opacity-60"></div>
               </div>
               <div className="flex flex-col">
-                <span className="text-[11px] font-black text-white uppercase tracking-tighter">WEB4_MESH_STABLE</span>
-                <span className="text-[9px] font-mono text-slate-600 uppercase tracking-widest mt-1">DID-PROVIDER-V4</span>
+                <span className="text-[11px] font-black text-white uppercase tracking-tighter">WEB5_MESH_STABLE</span>
+                <span className="text-[9px] font-mono text-slate-600 uppercase tracking-widest mt-1">DID-PROVIDER-V5</span>
               </div>
             </div>
           </div>

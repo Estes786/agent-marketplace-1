@@ -12,6 +12,7 @@ const BottomNav: React.FC<BottomNavProps> = ({ activePodsCount }) => {
   const items = [
     { path: '/', label: 'Market', icon: '🏪' },
     { path: '/dashboard', label: 'Dash', icon: '📊', badge: activePodsCount > 0 ? activePodsCount : null },
+    { path: '/dashboard?tab=Governance', label: 'DAO', icon: '⚖️' },
     { path: '/architect', label: 'Arch', icon: '🏗️' },
     { path: '/media-lab', label: 'Lab', icon: '🎬' },
   ];
