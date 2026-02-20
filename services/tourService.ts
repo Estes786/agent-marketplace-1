@@ -118,6 +118,33 @@ export const startOnboardingTour = (navigate: (path: string) => void) => {
   });
 
   tour.addStep({
+    id: 'roadmap',
+    attachTo: {
+      element: '[data-tour="sidebar-nav"]',
+      on: 'right'
+    },
+    title: 'Wealth Journey 🚀',
+    text: 'Follow the roadmap to sovereign wealth. Learn how to scale your digital empire and harvest autonomous yield.',
+    buttons: [
+      {
+        text: 'Back',
+        action: () => {
+          navigate('/architect');
+          setTimeout(() => tour.back(), 300);
+        },
+        classes: 'shepherd-button-secondary'
+      },
+      {
+        text: 'Next',
+        action: () => {
+          navigate('/roadmap');
+          setTimeout(() => tour.next(), 300);
+        }
+      }
+    ]
+  });
+
+  tour.addStep({
     id: 'gani-assistant',
     attachTo: {
       element: '[data-tour="gani-trigger"]',
@@ -128,7 +155,10 @@ export const startOnboardingTour = (navigate: (path: string) => void) => {
     buttons: [
       {
         text: 'Back',
-        action: tour.back,
+        action: () => {
+          navigate('/roadmap');
+          setTimeout(() => tour.back(), 300);
+        },
         classes: 'shepherd-button-secondary'
       },
       {

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 interface HeaderProps {
@@ -11,16 +11,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ credits = 0, activePodsCount = 0, toggleSidebar }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [did, setDid] = useState<string | null>(null);
   
-  const handleConnectDid = () => {
-    if (did) {
-      setDid(null);
-    } else {
-      setDid(`did:hypha:0x${Math.random().toString(16).substring(2, 8)}...${Math.random().toString(16).substring(2, 6)}`);
-    }
-  };
-
   const getTitle = () => {
     switch(location.pathname) {
       case '/': return 'Agent Marketplace';
@@ -93,35 +84,23 @@ const Header: React.FC<HeaderProps> = ({ credits = 0, activePodsCount = 0, toggl
           </div>
           <div className="w-px h-8 bg-slate-800/60"></div>
           <div className="flex flex-col">
-            <span className="text-[8px] text-slate-500 uppercase tracking-[0.2em] font-black mb-0.5">Hypha Credit Balance</span>
+            <span className="text-[8px] text-slate-500 uppercase tracking-[0.2em] font-black mb-0.5">Hypha Balance</span>
             <div className="flex items-center gap-1.5">
               <span className="text-xs font-mono font-bold text-indigo-400">{credits.toLocaleString()}</span>
               <span className="text-[9px] font-mono text-slate-600">HYPHA</span>
             </div>
           </div>
+          <div className="w-px h-8 bg-slate-800/60"></div>
+          <div className="flex flex-col">
+            <span className="text-[8px] text-slate-500 uppercase tracking-[0.2em] font-black mb-0.5">USD Balance</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-mono font-bold text-emerald-400">$1,500.00</span>
+              <span className="text-[9px] font-mono text-slate-600">USD</span>
+            </div>
+          </div>
         </div>
 
         <div className="flex items-center gap-2 md:gap-4">
-          <button 
-            onClick={handleConnectDid}
-            className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-2xl border text-[10px] font-black uppercase tracking-widest transition-all ${
-              did 
-              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20' 
-              : 'bg-indigo-600 hover:bg-indigo-500 border-indigo-500 text-white shadow-lg shadow-indigo-600/20'
-            }`}
-          >
-            {did ? (
-              <>
-                <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
-                {did}
-              </>
-            ) : (
-              <>
-                <span>🔗</span> Connect DID
-              </>
-            )}
-          </button>
-
           <button className="h-10 w-10 rounded-2xl border border-slate-800 flex items-center justify-center hover:bg-slate-800/50 transition-all relative group shrink-0">
             <span className="text-lg group-hover:scale-110 transition-transform">🔔</span>
             <span className="absolute top-2 right-2 w-2 h-2 bg-indigo-500 rounded-full border-2 border-slate-900"></span>

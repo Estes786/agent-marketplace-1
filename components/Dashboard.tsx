@@ -1,16 +1,18 @@
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { DeployedEcosystem, Blueprint } from '../types';
+import { DeployedEcosystem, Blueprint, UserStats } from '../types';
 import { ResponsiveContainer, AreaChart, Area, XAxis, Tooltip, CartesianGrid } from 'recharts';
 import { gemini } from '../services/geminiService';
 
 interface DashboardProps {
   ecosystems: DeployedEcosystem[];
   blueprints: Blueprint[];
+  userStats?: UserStats;
+  onClaimYield?: (amount: number) => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ ecosystems, blueprints }) => {
+const Dashboard: React.FC<DashboardProps> = ({ ecosystems, blueprints, userStats, onClaimYield }) => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [selectedId, setSelectedId] = useState<string | null>(ecosystems[0]?.id || null);
@@ -284,32 +286,46 @@ const Dashboard: React.FC<DashboardProps> = ({ ecosystems, blueprints }) => {
                         <span className="text-xl font-bold text-white uppercase tracking-tighter">Autonomous</span>
                       </div>
                       <div className="flex gap-2 mt-4">
-                        <button className="flex-1 py-2 bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all">Claim Wealth</button>
+                        <button 
+                          onClick={() => onClaimYield?.(selected?.metrics.autonomousIncome || 0)}
+                          className="flex-1 py-2 bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all disabled:opacity-50"
+                          disabled={!selected || selected.metrics.autonomousIncome <= 0}
+                        >
+                          Claim Wealth
+                        </button>
                         <button className="flex-1 py-2 bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 rounded-xl text-[8px] font-black uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all">Reinvest</button>
                       </div>
                     </div>
                   </div>
 
                   <div className="flex-1 bg-slate-950/40 rounded-[2.5rem] border border-slate-800/60 p-8 overflow-hidden flex flex-col">
-                    <h6 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-6">Autonomous Transaction Ledger</h6>
+                    <h6 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-6">Global Transaction Ledger</h6>
                     <div className="flex-1 overflow-y-auto space-y-3 custom-scrollbar">
-                      {Array.from({ length: 10 }).map((_, i) => (
-                        <div key={i} className="flex items-center justify-between p-4 bg-slate-900/40 border border-slate-800/60 rounded-2xl hover:border-emerald-500/30 transition-all group">
+                      {userStats?.transactions.map((tx) => (
+                        <div key={tx.id} className="flex items-center justify-between p-4 bg-slate-900/40 border border-slate-800/60 rounded-2xl hover:border-emerald-500/30 transition-all group">
                           <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-xl bg-slate-950 flex items-center justify-center text-lg">
-                              {['💰', '⚡', '🧬', '🔗'][i % 4]}
+                              {tx.type === 'yield' ? '💰' : tx.type === 'subscription' ? '💳' : '⚡'}
                             </div>
                             <div>
-                              <p className="text-xs font-bold text-white">Autonomous Service Yield</p>
-                              <p className="text-[9px] font-mono text-slate-500 uppercase">Block #{(842910 - i * 12).toLocaleString()}</p>
+                              <p className="text-xs font-bold text-white">{tx.description}</p>
+                              <p className="text-[9px] font-mono text-slate-500 uppercase">{new Date(tx.timestamp).toLocaleString()}</p>
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="text-xs font-mono font-bold text-emerald-400">+{((i + 1) * 0.124).toFixed(3)} HYPHA</p>
+                            <p className={`text-xs font-mono font-bold ${tx.amount > 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                              {tx.amount > 0 ? '+' : ''}{tx.amount.toFixed(2)} {tx.currency}
+                            </p>
                             <p className="text-[8px] text-slate-600 uppercase">Confirmed</p>
                           </div>
                         </div>
                       ))}
+                      {(!userStats?.transactions || userStats.transactions.length === 0) && (
+                        <div className="flex flex-col items-center justify-center h-full text-slate-600 space-y-4">
+                          <span className="text-4xl opacity-20">📜</span>
+                          <p className="text-[10px] font-black uppercase tracking-widest">No transactions detected in mesh</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

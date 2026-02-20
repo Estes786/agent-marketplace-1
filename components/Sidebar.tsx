@@ -27,6 +27,7 @@ const Sidebar: React.FC<SidebarProps> = ({ deployedCount, isOpen = false, setIsO
     { path: '/', label: 'Marketplace', icon: '🏪' },
     { path: '/dashboard', label: 'Command Center', icon: '📊', badge: deployedCount > 0 ? deployedCount : null },
     { path: '/architect', label: 'Web4 Architect', icon: '🏗️' },
+    { path: '/roadmap', label: 'Wealth Journey', icon: '🚀' },
     { path: '/media-lab', label: 'Visual Intel Lab', icon: '🎬' },
   ];
 

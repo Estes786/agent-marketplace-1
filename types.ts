@@ -63,6 +63,23 @@ export interface DeployedEcosystem {
   didHash?: string;
 }
 
+export interface Transaction {
+  id: string;
+  type: 'yield' | 'subscription' | 'trade' | 'reinvest';
+  amount: number;
+  currency: 'HYPHA' | 'USD';
+  timestamp: Date;
+  description: string;
+}
+
+export interface UserStats {
+  hyphaBalance: number;
+  usdBalance: number;
+  totalYield: number;
+  activeNodes: number;
+  transactions: Transaction[];
+}
+
 export interface Message {
   id: string;
   role: 'user' | 'assistant' | 'system';

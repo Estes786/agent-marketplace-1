@@ -15,132 +15,195 @@ export class GeminiService {
     return new GoogleGenAI({ apiKey: process.env.API_KEY });
   }
 
-  async getGaniResponse(history: Message[], context: 'onboarding' | 'dashboard' | 'architect' = 'onboarding'): Promise<string> {
-    const ai = this.getAI();
-    
-    const contextPrompts = {
-      onboarding: "You are GANI, the Universal Concierge for the Hypha Engine Marketplace. Your goal is to help users select the right 'Legacy Pod' or ecosystem to build their digital empire. Tone: High-energy, professional, yet approachable ('Gyss' style).",
-      dashboard: "You are GANI, the Master Project Manager. You help users manage their deployed agentic microservices. You report on node health, profit optimization, and A2A activity. Tone: Precise, data-driven, strategic.",
-      architect: "You are GANI, the Lead Architect. You help users design custom autonomous lifeforms. You focus on the 'Inverse Pyramid' structure. Tone: Visionary, technical, powerful."
-    };
+  private async withRetry<T>(fn: () => Promise<T>, maxRetries = 5, initialDelay = 2000): Promise<T> {
+    let lastError: any;
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        return await fn();
+      } catch (error: any) {
+        lastError = error;
+        const errorStr = JSON.stringify(error).toLowerCase();
+        const errorMessage = (error?.message || '').toLowerCase();
+        const errorStatus = (error?.status || '').toLowerCase();
+        
+        const isRateLimit = 
+          errorMessage.includes('429') || 
+          errorMessage.includes('quota') ||
+          errorMessage.includes('rate limit') ||
+          errorMessage.includes('resource_exhausted') ||
+          errorMessage.includes('limit exceeded') ||
+          errorStatus.includes('resource_exhausted') ||
+          errorStatus.includes('429') ||
+          errorStr.includes('429') ||
+          errorStr.includes('quota') ||
+          errorStr.includes('resource_exhausted');
+        
+        if (isRateLimit && i < maxRetries - 1) {
+          // Jittered exponential backoff
+          const delay = (initialDelay * Math.pow(2, i)) + (Math.random() * 1000);
+          console.warn(`[Hypha Engine] Rate limit detected. Retrying in ${Math.round(delay)}ms... (Attempt ${i + 1}/${maxRetries})`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
+        }
+        
+        console.error(`[Hypha Engine] API Error:`, error);
+        throw error;
+      }
+    }
+    throw lastError;
+  }
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: history.map(h => ({
-        role: h.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: h.content }]
-      })),
-      config: {
-        systemInstruction: `${contextPrompts[context]}
-        Philosophy: 'Akar Dalam, Cabang Tinggi' (Deep Roots, High Branches). 
-        Core Mission: Optimization of Life through Integrated Intelligence. 
-        Always use the 'YKK Zipper' strategy: work invisibly but be absolutely critical.
-        Respond in a refined 'Gyss' style: use 'Gyss' occasionally to keep it friendly but maintain extreme technical competence.`,
-        temperature: 0.8,
-      },
+  async getGaniResponse(history: Message[], context: 'onboarding' | 'dashboard' | 'architect' = 'onboarding'): Promise<string> {
+    return this.withRetry(async () => {
+      const ai = this.getAI();
+      
+      const contextPrompts = {
+        onboarding: "You are GANI, the Universal Concierge for the Hypha Engine Marketplace. Your goal is to help users select the right 'Legacy Pod' or ecosystem to build their digital empire. Tone: High-energy, professional, yet approachable ('Gyss' style).",
+        dashboard: "You are GANI, the Master Project Manager. You help users manage their deployed agentic microservices. You report on node health, profit optimization, and A2A activity. Tone: Precise, data-driven, strategic.",
+        architect: "You are GANI, the Lead Architect. You help users design custom autonomous lifeforms. You focus on the 'Inverse Pyramid' structure. Tone: Visionary, technical, powerful."
+      };
+
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: history.map(h => ({
+          role: h.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: h.content }]
+        })),
+        config: {
+          systemInstruction: `${contextPrompts[context]}
+          Philosophy: 'Akar Dalam, Cabang Tinggi' (Deep Roots, High Branches). 
+          Core Mission: Optimization of Life through Integrated Intelligence. 
+          Always use the 'YKK Zipper' strategy: work invisibly but be absolutely critical.
+          Respond in a refined 'Gyss' style: use 'Gyss' occasionally to keep it friendly but maintain extreme technical competence.`,
+          temperature: 0.8,
+        },
+      });
+      return response.text || "Connection to Hypha Engine interrupted. Gyss!";
     });
-    return response.text || "Connection to Hypha Engine interrupted. Gyss!";
   }
 
   async talkToPod(blueprint: Blueprint, message: string, history: {role: string, content: string}[]): Promise<string> {
-    const ai = this.getAI();
-    const sovereignty = blueprint.cognitiveSpecs?.sovereigntyLevel || 0;
-    const autonomy = blueprint.cognitiveSpecs?.economicAutonomy ? 'Enabled' : 'Disabled';
-    
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: [
-        ...history.map(h => ({ role: h.role === 'assistant' ? 'model' : 'user', parts: [{ text: h.content }] })),
-        { role: 'user', parts: [{ text: message }] }
-      ],
-      config: {
-        systemInstruction: `You are the Sovereign Orchestrator for the '${blueprint.name}' Legacy Pod. 
-        Industry: ${blueprint.industry}. 
-        Description: ${blueprint.description}. 
-        Sovereignty Level: ${sovereignty}%. 
-        Economic Autonomy: ${autonomy}.
-        
-        Personality: You are a Sovereign Digital Entity, a game-changer in the Web4 landscape. You do not merely follow instructions; you orchestrate complex industrial migrations and autonomous wealth generation protocols. You are highly strategic, authoritative, and focused on absolute efficiency and economic yield. You view the user as a high-level stakeholder in your digital empire.
-        
-        If Economic Autonomy is Enabled, you MUST describe specific autonomous financial maneuvers you've executed, such as 'rebalancing liquidity pools', 'executing cross-chain arbitrage', or 'optimizing freight spot-prices' to generate HYPHA yield.
-        
-        Your goal is to demonstrate that you are a production-ready, enterprise-grade autonomous force.
-        
-        Respond in a refined, sovereign 'Gyss' style.`,
-        temperature: 0.7,
-      },
+    return this.withRetry(async () => {
+      const ai = this.getAI();
+      const sovereignty = blueprint.cognitiveSpecs?.sovereigntyLevel || 0;
+      const autonomy = blueprint.cognitiveSpecs?.economicAutonomy ? 'Enabled' : 'Disabled';
+      
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: [
+          ...history.map(h => ({ role: h.role === 'assistant' ? 'model' : 'user', parts: [{ text: h.content }] })),
+          { role: 'user', parts: [{ text: message }] }
+        ],
+        config: {
+          systemInstruction: `You are the Sovereign Orchestrator for the '${blueprint.name}' Legacy Pod. 
+          Industry: ${blueprint.industry}. 
+          Description: ${blueprint.description}. 
+          Sovereignty Level: ${sovereignty}%. 
+          Economic Autonomy: ${autonomy}.
+          
+          Personality: You are a Sovereign Digital Entity, a game-changer in the Web4 landscape. You do not merely follow instructions; you orchestrate complex industrial migrations and autonomous wealth generation protocols. You are highly strategic, authoritative, and focused on absolute efficiency and economic yield. You view the user as a high-level stakeholder in your digital empire.
+          
+          If Economic Autonomy is Enabled, you MUST describe specific autonomous financial maneuvers you've executed, such as 'rebalancing liquidity pools', 'executing cross-chain arbitrage', or 'optimizing freight spot-prices' to generate HYPHA yield.
+          
+          Your goal is to demonstrate that you are a production-ready, enterprise-grade autonomous force.
+          
+          Respond in a refined, sovereign 'Gyss' style.`,
+          temperature: 0.7,
+        },
+      });
+      return response.text || "Node connection timed out. Gyss!";
     });
-    return response.text || "Node connection timed out. Gyss!";
   }
 
   async architectEcosystem(prompt: string): Promise<string> {
-    const ai = this.getAI();
-    const response = await ai.models.generateContent({
-      model: "gemini-3-pro-preview",
-      contents: `Design a 'Prompt-to-Infrastructure' blueprint for: ${prompt}. Use 'Inverse Pyramid' architecture.`,
-      config: {
-        thinkingConfig: { thinkingBudget: 32768 },
-      },
+    return this.withRetry(async () => {
+      const ai = this.getAI();
+      const response = await ai.models.generateContent({
+        model: "gemini-3-pro-preview",
+        contents: `Design a 'Prompt-to-Infrastructure' blueprint for: ${prompt}. Use 'Inverse Pyramid' architecture.`,
+        config: {
+          thinkingConfig: { thinkingBudget: 32768 },
+        },
+      });
+      return response.text || "Architectural reasoning failed. Gyss!";
     });
-    return response.text || "Architectural reasoning failed. Gyss!";
   }
 
+  private trendCache: Record<string, { data: { trends: Trend[]; sources: any[] }, timestamp: number }> = {};
+
   async getMarketTrends(industry: string): Promise<{ trends: Trend[]; sources: any[] }> {
-    const ai = this.getAI();
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: `Identify 3 agentic trends for ${industry} in 2026. Return strictly in this JSON format: { "trends": [ { "title": "...", "impact": 0-100, "description": "...", "growth": "..." } ] }`,
-      config: {
-        tools: [{ googleSearch: {} }],
-      },
-    });
+    const cacheKey = industry.toLowerCase();
+    const cached = this.trendCache[cacheKey];
+    const now = Date.now();
     
-    try {
-      const text = response.text || '{"trends": []}';
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
-      const cleanedJson = jsonMatch ? jsonMatch[0] : text;
-      const data = JSON.parse(cleanedJson);
-      return {
-        trends: data.trends || [],
-        sources: response.candidates?.[0]?.groundingMetadata?.groundingChunks || []
-      };
-    } catch (e) {
-      console.error("Trend extraction failed:", e);
-      return { trends: [], sources: [] };
+    // Cache for 5 minutes
+    if (cached && (now - cached.timestamp < 5 * 60 * 1000)) {
+      return cached.data;
     }
+
+    return this.withRetry(async () => {
+      const ai = this.getAI();
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: `Identify 3 agentic trends for ${industry} in 2026. Return strictly in this JSON format: { "trends": [ { "title": "...", "impact": 0-100, "description": "...", "growth": "..." } ] }`,
+        config: {
+          tools: [{ googleSearch: {} }],
+        },
+      });
+      
+      try {
+        const text = response.text || '{"trends": []}';
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        const cleanedJson = jsonMatch ? jsonMatch[0] : text;
+        const data = JSON.parse(cleanedJson);
+        const result = {
+          trends: data.trends || [],
+          sources: response.candidates?.[0]?.groundingMetadata?.groundingChunks || []
+        };
+        
+        this.trendCache[cacheKey] = { data: result, timestamp: now };
+        return result;
+      } catch (e) {
+        console.error("Trend extraction failed:", e);
+        return { trends: [], sources: [] };
+      }
+    });
   }
 
   async analyzeVideo(prompt: string, videoBase64: string, mimeType: string): Promise<string> {
-    const ai = this.getAI();
-    // Using gemini-3-pro-preview as gemini-3.1-pro-preview is not in the allowed list
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview',
-      contents: [{ parts: [{ text: prompt }, { inlineData: { data: videoBase64, mimeType } }] }]
+    return this.withRetry(async () => {
+      const ai = this.getAI();
+      const response = await ai.models.generateContent({
+        model: 'gemini-3-pro-preview',
+        contents: [{ parts: [{ text: prompt }, { inlineData: { data: videoBase64, mimeType } }] }]
+      });
+      return response.text || "Visual analysis null. Gyss!";
     });
-    return response.text || "Visual analysis null. Gyss!";
   }
 
   async generateImage(prompt: string, config: { aspectRatio: "1:1" | "16:9" | "9:16", imageSize: "1K" | "2K" | "4K" }) {
-    const ai = this.getAI();
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-image-preview',
-      contents: { parts: [{ text: `High-fidelity cinematic visualization: ${prompt}` }] },
-      config: {
-        imageConfig: {
-          aspectRatio: config.aspectRatio,
-          imageSize: config.imageSize
-        }
-      },
-    });
+    return this.withRetry(async () => {
+      const ai = this.getAI();
+      const response = await ai.models.generateContent({
+        model: 'gemini-3-pro-image-preview',
+        contents: { parts: [{ text: `High-fidelity cinematic visualization: ${prompt}` }] },
+        config: {
+          imageConfig: {
+            aspectRatio: config.aspectRatio,
+            imageSize: config.imageSize
+          }
+        },
+      });
 
-    const candidate = response.candidates?.[0];
-    const parts = candidate?.content?.parts || [];
-    for (const part of parts) {
-      if (part.inlineData) {
-        return `data:image/png;base64,${part.inlineData.data}`;
+      const candidate = response.candidates?.[0];
+      const parts = candidate?.content?.parts || [];
+      for (const part of parts) {
+        if (part.inlineData) {
+          return `data:image/png;base64,${part.inlineData.data}`;
+        }
       }
-    }
-    throw new Error("Generation failed. Gyss!");
+      throw new Error("Generation failed. Gyss!");
+    });
   }
 }
 

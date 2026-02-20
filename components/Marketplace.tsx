@@ -333,9 +333,16 @@ const Marketplace: React.FC<MarketplaceProps> = ({
                           <button 
                             onClick={(e) => { e.stopPropagation(); onDeploy(blueprint); }}
                             disabled={isProvisioning}
-                            className={`px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-indigo-600/10 active:scale-95 ${isProvisioning ? 'opacity-50 grayscale cursor-wait' : ''}`}
+                            className={`px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl shadow-indigo-600/10 active:scale-95 flex items-center gap-2 ${isProvisioning ? 'opacity-50 grayscale cursor-wait' : ''}`}
                           >
-                            {isProvisioning ? 'Provisioning...' : 'Instantiate'}
+                            {isProvisioning ? 'Provisioning...' : (
+                              <>
+                                <span>Instantiate</span>
+                                <span className="bg-white/20 px-1.5 py-0.5 rounded-lg text-[8px] font-mono">
+                                  {blueprint.tier === 'Enterprise' ? '500' : blueprint.tier === 'Pro' ? '150' : '0'} H
+                                </span>
+                              </>
+                            )}
                           </button>
                         </>
                       )}
